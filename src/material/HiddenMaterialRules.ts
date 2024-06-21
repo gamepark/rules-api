@@ -5,6 +5,7 @@ import mapValues from 'lodash/mapValues'
 import set from 'lodash/set'
 import unset from 'lodash/unset'
 import { IncompleteInformation } from '../IncompleteInformation'
+import { PlayMoveContext } from '../Rules'
 import { MaterialItem } from './items'
 import { MaterialGame } from './MaterialGame'
 import { MaterialRules } from './MaterialRules'
@@ -201,8 +202,8 @@ export abstract class HiddenMaterialRules<P extends number = number, M extends n
     return !hiddenPaths.length
   }
 
-  play(move: MaterialMoveRandomized<P, M, L> | MaterialMoveView<P, M, L>): MaterialMove<P, M, L>[] {
-    const result = super.play(move)
+  play(move: MaterialMoveRandomized<P, M, L> | MaterialMoveView<P, M, L>, context?: PlayMoveContext): MaterialMove<P, M, L>[] {
+    const result = super.play(move, context)
     if (this.client && isMoveItem(move) && this.hidingStrategies[move.itemType]) {
       const item = this.material(move.itemType).getItem(move.itemIndex)
       if (item) {

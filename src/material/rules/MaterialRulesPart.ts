@@ -1,4 +1,4 @@
-import { Rules } from '../../Rules'
+import { PlayMoveContext, Rules } from '../../Rules'
 import { Material } from '../items'
 import { MaterialGame } from '../MaterialGame'
 import { GameMemory, PlayerMemory } from '../memory'
@@ -13,23 +13,23 @@ export abstract class MaterialRulesPart<Player extends number = number, Material
     return new Material(type, Array.from((this.game.items[type] ?? []).entries()).filter(entry => entry[1].quantity !== 0))
   }
 
-  beforeItemMove(_move: ItemMove<Player, MaterialType, LocationType>): MaterialMove<Player, MaterialType, LocationType>[] {
+  beforeItemMove(_move: ItemMove<Player, MaterialType, LocationType>, _context?: PlayMoveContext): MaterialMove<Player, MaterialType, LocationType>[] {
     return []
   }
 
-  afterItemMove(_move: ItemMove<Player, MaterialType, LocationType>): MaterialMove<Player, MaterialType, LocationType>[] {
+  afterItemMove(_move: ItemMove<Player, MaterialType, LocationType>, _context?: PlayMoveContext): MaterialMove<Player, MaterialType, LocationType>[] {
     return []
   }
 
-  onRuleStart<RuleId extends number>(_move: RuleMove<Player, RuleId>, _previousRule?: RuleStep): MaterialMove<Player, MaterialType, LocationType>[] {
+  onRuleStart<RuleId extends number>(_move: RuleMove<Player, RuleId>, _previousRule?: RuleStep, _context?: PlayMoveContext): MaterialMove<Player, MaterialType, LocationType>[] {
     return []
   }
 
-  onRuleEnd<RuleId extends number>(_move: RuleMove<Player, RuleId>): MaterialMove<Player, MaterialType, LocationType>[] {
+  onRuleEnd<RuleId extends number>(_move: RuleMove<Player, RuleId>, _context?: PlayMoveContext): MaterialMove<Player, MaterialType, LocationType>[] {
     return []
   }
 
-  onCustomMove(_move: CustomMove): MaterialMove<Player, MaterialType, LocationType>[] {
+  onCustomMove(_move: CustomMove, _context?: PlayMoveContext): MaterialMove<Player, MaterialType, LocationType>[] {
     return []
   }
 

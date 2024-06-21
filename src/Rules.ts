@@ -59,7 +59,7 @@ export abstract class Rules<Game = any, Move = any, PlayerId = any> {
     return this.delegates().flatMap(rules => rules.getAutomaticMoves())
   }
 
-  play(move: Move, context?: { local?: boolean }): Move[] {
+  play(move: Move, context?: PlayMoveContext): Move[] {
     return this.delegates().flatMap(rules => rules.play(move, context))
   }
 
@@ -75,4 +75,8 @@ export abstract class Rules<Game = any, Move = any, PlayerId = any> {
   }
 
   isUnpredictableMove?(move: Move, player: PlayerId): boolean
+}
+
+export type PlayMoveContext = {
+  local?: boolean
 }

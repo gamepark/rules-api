@@ -2,7 +2,7 @@ import random from 'lodash/random'
 import shuffle from 'lodash/shuffle'
 import { Action } from '../Action'
 import { RandomMove } from '../RandomMove'
-import { Rules } from '../Rules'
+import { PlayMoveContext, Rules } from '../Rules'
 import { Undo } from '../Undo'
 import { Material, MaterialMutator } from './items'
 import { LocationStrategy } from './location'
@@ -102,7 +102,7 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
   }
 
   play(
-    move: MaterialMoveRandomized<Player, MaterialType, LocationType> | MaterialMoveView<Player, MaterialType, LocationType>
+    move: MaterialMoveRandomized<Player, MaterialType, LocationType> | MaterialMoveView<Player, MaterialType, LocationType>, context?: PlayMoveContext
   ): MaterialMove<Player, MaterialType, LocationType>[] {
 
     const consequences: MaterialMove<Player, MaterialType, LocationType>[] = []
@@ -110,7 +110,7 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
     switch (move.kind) {
       case MoveKind.ItemMove:
         if (rulesStep) {
-          consequences.push(...rulesStep.beforeItemMove(move))
+          consequences.push(...rulesStep.beforeItemMove(move, context))
         }
         if (!this.game.items[move.itemType]) this.game.items[move.itemType] = []
         const mutator = this.mutator(move.itemType)
@@ -120,7 +120,7 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
           delete this.game.droppedItem
         }
         if (rulesStep) {
-          consequences.push(...rulesStep.afterItemMove(move))
+          consequences.push(...rulesStep.afterItemMove(move, context))
         }
         break
       case MoveKind.RulesMove:
@@ -129,12 +129,12 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
             this.game.rule.players = this.game.rule.players.filter(player => player !== move.player)
           }
         } else {
-          consequences.push(...this.changeRule(move))
+          consequences.push(...this.changeRule(move, context))
         }
         break
       case MoveKind.CustomMove:
         if (rulesStep) {
-          consequences.push(...rulesStep.onCustomMove(move))
+          consequences.push(...rulesStep.onCustomMove(move, context))
         }
         break
       case MoveKind.LocalMove:
@@ -161,8 +161,8 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
     return this.transformMoves(consequences)
   }
 
-  private changeRule(move: RuleMove<Player>): MaterialMove<Player, MaterialType, LocationType>[] {
-    const moves = this.rulesStep?.onRuleEnd(move) ?? []
+  private changeRule(move: RuleMove<Player>, context?: PlayMoveContext): MaterialMove<Player, MaterialType, LocationType>[] {
+    const moves = this.rulesStep?.onRuleEnd(move, context) ?? []
     const rule = this.game.rule
     switch (move.type) {
       case RuleMoveType.StartPlayerTurn:
@@ -178,7 +178,7 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
         delete this.game.rule
         break
     }
-    return moves.concat(this.rulesStep?.onRuleStart(move, rule) ?? [])
+    return moves.concat(this.rulesStep?.onRuleStart(move, rule, context) ?? [])
   }
 
   canUndo(action: Action<MaterialMove<Player, MaterialType, LocationType>, Player>,
