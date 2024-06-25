@@ -1,6 +1,6 @@
-import equal from 'fast-deep-equal'
 import difference from 'lodash/difference'
 import get from 'lodash/get'
+import isEqual from 'lodash/isEqual'
 import mapValues from 'lodash/mapValues'
 import set from 'lodash/set'
 import unset from 'lodash/unset'
@@ -190,7 +190,7 @@ export abstract class HiddenMaterialRules<P extends number = number, M extends n
     const material = this.material(move.itemType)
     const hiddenPaths = this.getItemHiddenPaths(move.itemType, material.getItem(move.indexes[0])!, player)
     if (process.env.NODE_ENV === 'development' && move.indexes.some(index =>
-      !equal(hiddenPaths, this.getItemHiddenPaths(move.itemType, material.getItem(index)!, player))
+      !isEqual(hiddenPaths, this.getItemHiddenPaths(move.itemType, material.getItem(index)!, player))
     )) {
       throw new RangeError(`You cannot shuffle items with different hiding strategies: ${
         JSON.stringify(move.indexes.map(index => this.getItemHiddenPaths(move.itemType, material.getItem(index)!, player)))

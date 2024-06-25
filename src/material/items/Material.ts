@@ -1,4 +1,4 @@
-import equal from 'fast-deep-equal'
+import isEqual from 'lodash/isEqual'
 import maxBy from 'lodash/maxBy'
 import minBy from 'lodash/minBy'
 import orderBy from 'lodash/orderBy'
@@ -91,7 +91,7 @@ export class Material<P extends number = number, M extends number = number, L ex
   }
 
   id<Id extends string | number | Record<string, any> | undefined>(arg?: Id | ((id: Id) => boolean)): this {
-    return this.filter(({ id }) => typeof arg === 'function' ? arg(id) : equal(id, arg))
+    return this.filter(({ id }) => typeof arg === 'function' ? arg(id) : isEqual(id, arg))
   }
 
   location(arg: L | ((location: Location<P, L>) => boolean)): this {
@@ -99,7 +99,7 @@ export class Material<P extends number = number, M extends number = number, L ex
   }
 
   rotation<R extends string | number | boolean | Record<string, any> | undefined>(arg?: R | ((rotation: R) => boolean)): this {
-    return this.location(({ rotation }) => typeof arg === 'function' ? arg(rotation) : equal(rotation, arg))
+    return this.location(({ rotation }) => typeof arg === 'function' ? arg(rotation) : isEqual(rotation, arg))
   }
 
   player(arg?: P | ((player?: P) => boolean)): this {
@@ -107,11 +107,11 @@ export class Material<P extends number = number, M extends number = number, L ex
   }
 
   locationId<Id extends string | number | boolean | Record<string, any> | undefined>(arg: Id | ((id: Id) => boolean)): this {
-    return this.location(({ id }) => typeof arg === 'function' ? arg(id) : equal(id, arg))
+    return this.location(({ id }) => typeof arg === 'function' ? arg(id) : isEqual(id, arg))
   }
 
   parent(arg?: number | ((parent?: number) => boolean)): this {
-    return this.location(({ parent }) => typeof arg === 'function' ? arg(parent) : equal(parent, arg))
+    return this.location(({ parent }) => typeof arg === 'function' ? arg(parent) : isEqual(parent, arg))
   }
 
   minBy(selector: (item: MaterialItem<P, L>) => number): this {

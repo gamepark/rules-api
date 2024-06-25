@@ -1,4 +1,4 @@
-import equal from 'fast-deep-equal'
+import isEqual from 'lodash/isEqual'
 import merge from 'lodash/merge'
 import { Location, LocationStrategy } from '../location'
 import {
@@ -8,8 +8,8 @@ import {
   ItemMoveRandomized,
   ItemMoveType,
   ItemMoveView,
-  MoveItemsAtOnce,
   MoveItem,
+  MoveItemsAtOnce,
   RollItem,
   SelectItem,
   Shuffle,
@@ -241,7 +241,7 @@ export class MaterialMutator<P extends number = number, M extends number = numbe
 }
 
 export const itemsCanMerge = ({ quantity: q1, ...data1 }: MaterialItem, { quantity: q2, ...data2 }: MaterialItem): boolean =>
-  q1 !== 0 && q2 !== 0 && equal(data1, data2)
+  q1 !== 0 && q2 !== 0 && isEqual(data1, data2)
 
 export const isSameLocationArea = (...locations: Partial<Location>[]): boolean => locations.every((l, _, [l0]) =>
   l.type === l0.type && l.id === l0.id && l.player === l0.player && l.parent === l0.parent

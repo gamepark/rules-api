@@ -1,4 +1,4 @@
-import equal from 'fast-deep-equal'
+import isEqual from 'lodash/isEqual'
 import { hasEliminations } from './Eliminations'
 
 export abstract class Rules<Game = any, Move = any, PlayerId = any> {
@@ -42,11 +42,11 @@ export abstract class Rules<Game = any, Move = any, PlayerId = any> {
     if (rules.some(rules => rules.isLegalMove(playerId, move))) {
       return true
     }
-    if (this.getLegalMoves(playerId).some(legalMove => equal(move, legalMove))) {
+    if (this.getLegalMoves(playerId).some(legalMove => isEqual(move, legalMove))) {
       return true
     }
     if (hasEliminations(this) && this.giveUpMove) {
-      return equal(move, this.giveUpMove(playerId))
+      return isEqual(move, this.giveUpMove(playerId))
     }
     return false
   }
