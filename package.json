@@ -18,16 +18,17 @@
   ],
   "author": "Romain Fromi <romain@game-park.com> (https://game-park.com/)",
   "license": "ISC",
-  "dependencies": {
-    "lodash": "^4.17.21"
-  },
   "publishConfig": {
     "access": "public"
   },
   "devDependencies": {
+    "lodash": "^4.17.21",
     "@types/lodash": "^4.17.5",
     "@types/node": "^20.14.2",
     "i18next": ">=21.3.0",
     "typescript": "^5.4.5"
+  },
+  "peerDependencies": {
+    "lodash": "^4.17.21"
   }
 }
