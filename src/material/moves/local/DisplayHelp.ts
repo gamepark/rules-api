@@ -52,9 +52,3 @@ export const displayRulesHelp = <P extends number = number, M extends number = n
 (ruleId: RuleId): DisplayHelp<P, M, L> =>
   displayHelp({ type: HelpDisplayType.Rules, ruleId })
 
-export type CloseHelpDisplay = {
-  kind: MoveKind.LocalMove
-  type: typeof LocalMoveType.CloseHelpDisplay
-}
-
-export const closeHelpDisplay: CloseHelpDisplay = { kind: MoveKind.LocalMove, type: LocalMoveType.CloseHelpDisplay }
