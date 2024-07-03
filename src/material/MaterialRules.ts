@@ -1,4 +1,3 @@
-import isEqual from 'lodash/isEqual'
 import random from 'lodash/random'
 import shuffle from 'lodash/shuffle'
 import { Action } from '../Action'
@@ -77,10 +76,6 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
 
   transformMoves(moves: MaterialMove<Player, MaterialType, LocationType>[]): MaterialMove<Player, MaterialType, LocationType>[] {
     return moves
-  }
-
-  isLegalMove(playerId: Player, move: MaterialMove<Player, MaterialType, LocationType>): boolean {
-    return super.getLegalMoves(playerId).some(legalMove => isEqual(move, legalMove))
   }
 
   getLegalMoves(playerId: Player): MaterialMove<Player, MaterialType, LocationType>[] {
