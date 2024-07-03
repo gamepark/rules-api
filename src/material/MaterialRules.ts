@@ -31,7 +31,7 @@ import { MaterialRulesPart, MaterialRulesPartCreator } from './rules'
 export abstract class MaterialRules<Player extends number = number, MaterialType extends number = number, LocationType extends number = number>
   extends Rules<MaterialGame<Player, MaterialType, LocationType>, MaterialMove<Player, MaterialType, LocationType>, Player>
   implements RandomMove<MaterialMove<Player, MaterialType, LocationType>, MaterialMoveRandomized<Player, MaterialType, LocationType>>,
-    Undo<MaterialGame<Player, MaterialType, LocationType>, MaterialMove<Player, MaterialType, LocationType>, Player> {
+    Undo<MaterialMove<Player, MaterialType, LocationType>, Player> {
 
   material(type: MaterialType): Material<Player, MaterialType, LocationType> {
     return new Material(type, Array.from((this.game.items[type] ?? []).entries()).filter(entry => entry[1].quantity !== 0))
@@ -147,9 +147,6 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
           case LocalMoveType.DisplayHelp:
             this.game.helpDisplay = move.helpDisplay
             break
-          case LocalMoveType.CloseHelpDisplay:
-            delete this.game.helpDisplay
-            break
           case LocalMoveType.DropItem:
             this.game.droppedItem = move.item
             break
@@ -241,10 +238,6 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
 
   protected isRandomMove(move: MaterialMove<Player, MaterialType, LocationType>): boolean {
     return isShuffle(move) || isRoll(move)
-  }
-
-  restoreLocalMoves(game: MaterialGame<Player, MaterialType, LocationType>) {
-    this.game.helpDisplay = game.helpDisplay
   }
 
   isOver(): boolean {
