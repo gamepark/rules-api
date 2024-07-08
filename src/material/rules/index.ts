@@ -1,4 +1,4 @@
-export * from './MaterialRulesMovesBuilder'
+export * from './MaterialMoveBuilder'
 export * from './MaterialRulesPart'
 export * from './PlayerTurnRule'
 export * from './RuleStep'
