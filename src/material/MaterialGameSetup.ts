@@ -4,7 +4,7 @@ import { Material } from './items'
 import { MaterialGame } from './MaterialGame'
 import { MaterialRules, MaterialRulesCreator } from './MaterialRules'
 import { GameMemory, PlayerMemory } from './memory'
-import { MaterialRulesMovesBuilder } from './rules'
+import { MaterialMoveBuilder } from './rules'
 
 export abstract class MaterialGameSetup<P extends number = number, M extends number = number, L extends number = number, Options = any>
   implements GameSetup<MaterialGame<P, M, L>, Options> {
@@ -47,20 +47,16 @@ export abstract class MaterialGameSetup<P extends number = number, M extends num
 
   abstract start(options: Options): void
 
-  private get rulesMovesBuilder(): MaterialRulesMovesBuilder<P, M, L> {
-    return new MaterialRulesMovesBuilder<P, M, L>(this.game)
-  }
-
   startPlayerTurn<RuleId extends number = number>(id: RuleId, player: P) {
-    playMove(this.rules, this.rulesMovesBuilder.startPlayerTurn(id, player))
+    playMove(this.rules, MaterialMoveBuilder.startPlayerTurn(id, player))
   }
 
   startSimultaneousRule<RuleId extends number = number>(id: RuleId, players?: P[]) {
-    playMove(this.rules, this.rulesMovesBuilder.startSimultaneousRule(id, players))
+    playMove(this.rules, MaterialMoveBuilder.startSimultaneousRule(id, players))
   }
 
   startRule<RuleId extends number = number>(id: RuleId) {
-    playMove(this.rules, this.rulesMovesBuilder.startRule(id))
+    playMove(this.rules, MaterialMoveBuilder.startRule(id))
   }
 }
 

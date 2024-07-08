@@ -1,8 +1,11 @@
 import { MaterialMove } from '../moves'
+import { MaterialMoveBuilder } from './MaterialMoveBuilder'
 import { MaterialRulesPart } from './MaterialRulesPart'
 
 export abstract class SimultaneousRule<Player extends number = number, MaterialType extends number = number, LocationType extends number = number>
   extends MaterialRulesPart<Player, MaterialType, LocationType> {
+
+  endPlayerTurn = MaterialMoveBuilder.endPlayerTurn
 
   isTurnToPlay(player: Player): boolean {
     return this.game.rule?.players?.includes(player) ?? false

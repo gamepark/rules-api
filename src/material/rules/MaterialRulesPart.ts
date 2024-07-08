@@ -3,7 +3,7 @@ import { Material } from '../items'
 import { MaterialGame } from '../MaterialGame'
 import { GameMemory, PlayerMemory } from '../memory'
 import { CustomMove, ItemMove, MaterialMove, RuleMove } from '../moves'
-import { MaterialRulesMovesBuilder } from './MaterialRulesMovesBuilder'
+import { MaterialMoveBuilder } from './MaterialMoveBuilder'
 import { RuleStep } from './RuleStep'
 
 export abstract class MaterialRulesPart<Player extends number = number, MaterialType extends number = number, LocationType extends number = number>
@@ -33,9 +33,18 @@ export abstract class MaterialRulesPart<Player extends number = number, Material
     return []
   }
 
-  rules(): MaterialRulesMovesBuilder<Player, MaterialType, LocationType> {
-    return new MaterialRulesMovesBuilder<Player, MaterialType, LocationType>(this.game)
+  /**
+   * @deprecated replace this.rules().[the function] with: this.[the function]
+   */
+  rules(): typeof MaterialMoveBuilder {
+    return MaterialMoveBuilder
   }
+
+  startPlayerTurn = MaterialMoveBuilder.startPlayerTurn
+  startSimultaneousRule = MaterialMoveBuilder.startSimultaneousRule
+  startRule = MaterialMoveBuilder.startRule
+  customMove = MaterialMoveBuilder.customMove
+  endGame = MaterialMoveBuilder.endGame
 
   protected getMemory(player?: Player) {
     return player === undefined ? new GameMemory(this.game) : new PlayerMemory(this.game, player)
