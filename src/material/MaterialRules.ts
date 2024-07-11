@@ -74,18 +74,6 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
     return this.rulesStep
   }
 
-  transformMoves(moves: MaterialMove<Player, MaterialType, LocationType>[]): MaterialMove<Player, MaterialType, LocationType>[] {
-    return moves
-  }
-
-  getLegalMoves(playerId: Player): MaterialMove<Player, MaterialType, LocationType>[] {
-    return this.transformMoves(super.getLegalMoves(playerId))
-  }
-
-  getAutomaticMoves(): MaterialMove<Player, MaterialType, LocationType>[] {
-    return this.transformMoves(super.getAutomaticMoves())
-  }
-
   randomize(
     move: MaterialMove<Player, MaterialType, LocationType>
   ): MaterialMove<Player, MaterialType, LocationType> & MaterialMoveRandomized<Player, MaterialType, LocationType> {
@@ -155,7 +143,7 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
         }
     }
 
-    return this.transformMoves(consequences)
+    return consequences
   }
 
   private changeRule(move: RuleMove<Player>, context?: PlayMoveContext): MaterialMove<Player, MaterialType, LocationType>[] {
