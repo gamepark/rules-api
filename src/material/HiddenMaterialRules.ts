@@ -37,7 +37,15 @@ export abstract class HiddenMaterialRules<P extends number = number, M extends n
 
   abstract readonly hidingStrategies: Partial<Record<M, Partial<Record<L, HidingStrategy<P, L>>>>>
 
-  override transformMoves(moves: MaterialMove<P, M, L>[]): MaterialMove<P, M, L>[] {
+  getLegalMoves(playerId: P): MaterialMove<P, M, L>[] {
+    return this.transformMoves(super.getLegalMoves(playerId))
+  }
+
+  getAutomaticMoves(): MaterialMove<P, M, L>[] {
+    return this.transformMoves(super.getAutomaticMoves())
+  }
+
+  private transformMoves(moves: MaterialMove<P, M, L>[]): MaterialMove<P, M, L>[] {
     for (const move of moves) {
       if (move && this.isRevealingItemMove(move)) {
         move.reveal = {}
@@ -46,7 +54,7 @@ export abstract class HiddenMaterialRules<P extends number = number, M extends n
     return moves
   }
 
-  isRevealingItemMove(move: MaterialMove<P, M, L>): move is MoveItem<P, M, L> | MoveItemsAtOnce<P, M, L> {
+  private isRevealingItemMove(move: MaterialMove<P, M, L>): move is MoveItem<P, M, L> | MoveItemsAtOnce<P, M, L> {
     return (isMoveItem(move) && this.game.players.some(player => this.moveItemWillRevealSomething(move, player))) ||
       (isMoveItemsAtOnce(move) && this.game.players.some(player => this.moveAtOnceWillRevealSomething(move, player)))
   }
@@ -203,7 +211,8 @@ export abstract class HiddenMaterialRules<P extends number = number, M extends n
   }
 
   play(move: MaterialMoveRandomized<P, M, L> | MaterialMoveView<P, M, L>, context?: PlayMoveContext): MaterialMove<P, M, L>[] {
-    const result = super.play(move, context)
+    const result = this.transformMoves(super.play(move, context))
+
     if (this.client && isMoveItem(move) && this.hidingStrategies[move.itemType]) {
       const item = this.material(move.itemType).getItem(move.itemIndex)
       if (item) {
@@ -219,6 +228,7 @@ export abstract class HiddenMaterialRules<P extends number = number, M extends n
         }
       }
     }
+
     return result
   }
 }
