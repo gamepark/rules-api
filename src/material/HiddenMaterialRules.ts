@@ -49,15 +49,6 @@ export abstract class HiddenMaterialRules<P extends number = number, M extends n
     return super.randomize(move)
   }
 
-  isLegalMove(playerId: P, move: MaterialMove<P, M, L>): boolean {
-    if (isMoveItem(move) && move.reveal) {
-      // override for backward compatibility with all game front-end built on rules-api <= 6.22
-      const {reveal, ...moveWithoutReveal} = move
-      return super.isLegalMove(playerId, moveWithoutReveal)
-    }
-    return super.isLegalMove(playerId, move)
-  }
-
   private isRevealingItemMove(move: MaterialMove<P, M, L>): move is MoveItem<P, M, L> | MoveItemsAtOnce<P, M, L> {
     return (isMoveItem(move) && this.game.players.some(player => this.moveItemWillRevealSomething(move, player))) ||
       (isMoveItemsAtOnce(move) && this.game.players.some(player => this.moveAtOnceWillRevealSomething(move, player)))
