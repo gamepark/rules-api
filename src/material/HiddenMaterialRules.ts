@@ -37,21 +37,25 @@ export abstract class HiddenMaterialRules<P extends number = number, M extends n
 
   abstract readonly hidingStrategies: Partial<Record<M, Partial<Record<L, HidingStrategy<P, L>>>>>
 
-  getLegalMoves(playerId: P): MaterialMove<P, M, L>[] {
-    return this.transformMoves(super.getLegalMoves(playerId))
-  }
-
-  getAutomaticMoves(): MaterialMove<P, M, L>[] {
-    return this.transformMoves(super.getAutomaticMoves())
-  }
-
-  private transformMoves(moves: MaterialMove<P, M, L>[]): MaterialMove<P, M, L>[] {
-    for (const move of moves) {
-      if (move && this.isRevealingItemMove(move)) {
-        move.reveal = {}
-      }
+  randomize(move: MaterialMove<P, M, L>): MaterialMove<P, M, L> & MaterialMoveRandomized<P, M, L> {
+    if (this.isRevealingItemMove(move)) {
+      // We need to know if a MoveItem has revealed something to prevent the undo in that case.
+      // To know that, we need the position of the item before the move.
+      // To prevent having to recalculate the game state before the move, we flag the move in the database with "reveal: {}".
+      // This flag indicate that something was revealed to someone.
+      // We use the "randomize" function because is the where we can "preprocess" the move and transform it after checking it is legal and before it is saved.
+      return {...move, reveal: {}}
     }
-    return moves
+    return super.randomize(move)
+  }
+
+  isLegalMove(playerId: P, move: MaterialMove<P, M, L>): boolean {
+    if (isMoveItem(move) && move.reveal) {
+      // override for backward compatibility with all game front-end built on rules-api <= 6.22
+      const {reveal, ...moveWithoutReveal} = move
+      return super.isLegalMove(playerId, moveWithoutReveal)
+    }
+    return super.isLegalMove(playerId, move)
   }
 
   private isRevealingItemMove(move: MaterialMove<P, M, L>): move is MoveItem<P, M, L> | MoveItemsAtOnce<P, M, L> {
@@ -211,7 +215,7 @@ export abstract class HiddenMaterialRules<P extends number = number, M extends n
   }
 
   play(move: MaterialMoveRandomized<P, M, L> | MaterialMoveView<P, M, L>, context?: PlayMoveContext): MaterialMove<P, M, L>[] {
-    const result = this.transformMoves(super.play(move, context))
+    const result = super.play(move, context)
 
     if (this.client && isMoveItem(move) && this.hidingStrategies[move.itemType]) {
       const item = this.material(move.itemType).getItem(move.itemIndex)
