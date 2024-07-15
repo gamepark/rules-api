@@ -1,6 +1,6 @@
-import { hasRandomMove } from './RandomMove'
-import { loopWithFuse } from './LoopWithFuse'
-import { Rules } from './Rules'
+import { hasRandomMove } from '../RandomMove'
+import { Rules } from '../Rules'
+import { loopWithFuse } from './loops.util'
 
 export function applyAutomaticMoves<Game, Move, PlayerId>(rules: Rules<Game, Move, PlayerId>, moves: Move[] = [], preprocessMove?: (move: Move) => void) {
   loopWithFuse(() => {

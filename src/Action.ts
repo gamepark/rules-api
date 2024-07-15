@@ -1,6 +1,6 @@
 import { hasRandomMove } from './RandomMove'
 import { Rules } from './Rules'
-import { applyAutomaticMoves } from './ApplyAutomaticMoves'
+import { applyAutomaticMoves } from './utils'
 import { getMoveView, IncompleteInformation } from './IncompleteInformation'
 
 export type Action<Move = any, PlayerId = any> = {
