@@ -1,4 +1,4 @@
-import { isEnumValue } from './EnumUtils'
+import { isEnumValue } from './enum.util'
 import { isXYCoordinates, XYCoordinates } from './grid.util'
 
 export const areAdjacentSquares = (square1: Partial<XYCoordinates>, square2: Partial<XYCoordinates>): boolean =>
