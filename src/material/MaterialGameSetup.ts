@@ -1,5 +1,5 @@
 import { playMove } from '../Action'
-import { GameSetup } from '../GameSetup'
+import { GameSetup } from '../setup'
 import { Material } from './items'
 import { MaterialGame } from './MaterialGame'
 import { MaterialRules, MaterialRulesCreator } from './MaterialRules'
