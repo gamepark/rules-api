@@ -1,4 +1,4 @@
-import { RulesCreator } from './RulesCreator'
+import { RulesCreator } from '../RulesCreator'
 import { GameSetup } from './GameSetup'
 
 export class DefaultGameSetup<Game = any, Move = any, PlayerId = any, Options = any> implements GameSetup<Game, Options> {
