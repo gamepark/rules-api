@@ -1,9 +1,11 @@
-import { playMove } from '../Action'
 import { GameSetup } from '../GameSetup'
+import { hasRandomMove } from '../RandomMove'
+import { applyAutomaticMoves } from '../utils'
 import { Material } from './items'
 import { MaterialGame } from './MaterialGame'
 import { MaterialRules, MaterialRulesCreator } from './MaterialRules'
 import { GameMemory, PlayerMemory } from './memory'
+import { MaterialMove } from './moves'
 import { MaterialMoveBuilder } from './rules'
 
 export abstract class MaterialGameSetup<P extends number = number, M extends number = number, L extends number = number, Options = any>
@@ -31,10 +33,18 @@ export abstract class MaterialGameSetup<P extends number = number, M extends num
   setupMaterial(_options: Options): void {
   }
 
+  protected playMove(move: MaterialMove<P, M, L>) {
+    if (hasRandomMove(this.rules)) {
+      move = this.rules.randomize(move)
+    }
+    const consequences = this.rules.play(JSON.parse(JSON.stringify(move)))
+    applyAutomaticMoves(this.rules, consequences)
+  }
+
   material(type: M): Material<P, M, L> {
     if (!this.game.items[type]) this.game.items[type] = []
     const items = this.game.items[type]!
-    return new Material(type, Array.from(items.entries()).filter(entry => entry[1].quantity !== 0), move => playMove(this.rules, move))
+    return new Material(type, Array.from(items.entries()).filter(entry => entry[1].quantity !== 0), move => this.playMove(move))
   }
 
   protected getMemory(player?: P) {
@@ -48,15 +58,15 @@ export abstract class MaterialGameSetup<P extends number = number, M extends num
   abstract start(options: Options): void
 
   startPlayerTurn<RuleId extends number = number>(id: RuleId, player: P) {
-    playMove(this.rules, MaterialMoveBuilder.startPlayerTurn(id, player))
+    this.playMove(MaterialMoveBuilder.startPlayerTurn(id, player))
   }
 
   startSimultaneousRule<RuleId extends number = number>(id: RuleId, players?: P[]) {
-    playMove(this.rules, MaterialMoveBuilder.startSimultaneousRule(id, players))
+    this.playMove(MaterialMoveBuilder.startSimultaneousRule(id, players))
   }
 
   startRule<RuleId extends number = number>(id: RuleId) {
-    playMove(this.rules, MaterialMoveBuilder.startRule(id))
+    this.playMove(MaterialMoveBuilder.startRule(id))
   }
 }
 
