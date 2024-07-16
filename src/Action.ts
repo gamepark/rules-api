@@ -10,14 +10,6 @@ export type Action<Move = any, PlayerId = any> = {
   consequences: Move[]
 }
 
-export function playMove<Game, Move, PlayerId>(rules: Rules<Game, Move, PlayerId>, move: Move) {
-  if (hasRandomMove(rules)) {
-    move = rules.randomize(move)
-  }
-  const consequences = rules.play(JSON.parse(JSON.stringify(move)))
-  applyAutomaticMoves(rules, consequences)
-}
-
 export function playAction<Game, Move, PlayerId>(rules: Rules<Game, Move, PlayerId>, move: Move, playerId: PlayerId): Action<Move, PlayerId> {
   if (hasRandomMove(rules)) {
     move = rules.randomize(move)
