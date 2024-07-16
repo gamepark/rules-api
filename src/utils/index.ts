@@ -1,3 +1,5 @@
+export * from './action.util'
+export * from './action-view.util'
 export * from './automatic-moves.util'
 export * from './enum.util'
 export * from './grid.util'
