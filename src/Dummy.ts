@@ -1,4 +1,4 @@
-import { RulesCreator } from './RulesCreator'
+import { RulesCreator } from './Rules'
 
 export class Dummy<Game, Move = string, PlayerId = number> {
 
