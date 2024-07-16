@@ -1,5 +1,3 @@
-import { Rules } from './Rules'
-
 export interface IncompleteInformation<GameView = any, Move = any, MoveView = any> {
   getView(): GameView
 
@@ -24,22 +22,3 @@ export function hasSecretInformation<GameView = any, Move = any, MoveView = any,
   return typeof test.getPlayerView === 'function'
 }
 
-export function getGameView<Game, GameView, PlayerId>(rules: Rules<Game, any, PlayerId>, playerId?: PlayerId): GameView {
-  if (hasSecretInformation<GameView, any, any, PlayerId>(rules) && playerId !== undefined) {
-    return rules.getPlayerView(playerId)
-  } else if (hasIncompleteInformation<GameView>(rules)) {
-    return rules.getView()
-  } else {
-    return rules.game as Game & GameView
-  }
-}
-
-export function getMoveView<GameView, Move, MoveView, PlayerId>(rules: Rules<any, Move, PlayerId>, move: Move, playerId?: PlayerId): MoveView {
-  if (hasSecretInformation<GameView, Move, MoveView, PlayerId>(rules) && rules.getPlayerMoveView && playerId !== undefined) {
-    return JSON.parse(JSON.stringify(rules.getPlayerMoveView(move, playerId)))
-  } else if (hasIncompleteInformation<GameView, Move, MoveView>(rules)) {
-    return JSON.parse(JSON.stringify(rules.getMoveView(move)))
-  } else {
-    return move as Move & MoveView
-  }
-}
