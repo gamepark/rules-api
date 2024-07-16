@@ -1,4 +1,4 @@
-import { SecretInformation } from '../IncompleteInformation'
+import { SecretInformation } from '../SecretInformation'
 import { HiddenMaterialRules, HidingStrategy } from './HiddenMaterialRules'
 import { MaterialItem } from './items'
 import { MaterialGame } from './MaterialGame'
