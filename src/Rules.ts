@@ -191,6 +191,10 @@ export abstract class Rules<Game = any, Move = any, PlayerId = any> {
   isUnpredictableMove?(move: Move, player: PlayerId): boolean
 }
 
+export interface RulesCreator<Game = any, Move = any, Player = number> {
+  new(state: Game, client?: { player?: Player }): Rules<Game, Move, Player>
+}
+
 /**
  * The context when a move is played.
  */
