@@ -1,5 +1,5 @@
 import { Action } from '../Action'
-import { getMoveView, IncompleteInformation } from '../IncompleteInformation'
+import { hasIncompleteInformation, hasSecretInformation, IncompleteInformation } from '../IncompleteInformation'
 import { hasRandomMove } from '../RandomMove'
 import { Rules } from '../Rules'
 import { applyAutomaticMoves } from './automatic-moves.util'
@@ -44,6 +44,16 @@ export function playActionWithViews<Game, View, Move, MoveView, PlayerId>(
   })
 
   return actionWithView
+}
+
+export function getMoveView<GameView, Move, MoveView, PlayerId>(rules: Rules<any, Move, PlayerId>, move: Move, playerId?: PlayerId): MoveView {
+  if (hasSecretInformation<GameView, Move, MoveView, PlayerId>(rules) && rules.getPlayerMoveView && playerId !== undefined) {
+    return JSON.parse(JSON.stringify(rules.getPlayerMoveView(move, playerId)))
+  } else if (hasIncompleteInformation<GameView, Move, MoveView>(rules)) {
+    return JSON.parse(JSON.stringify(rules.getMoveView(move)))
+  } else {
+    return move as Move & MoveView
+  }
 }
 
 export type SecretAction<Move = any, MoveView = Move, PlayerId = any> = Action<Move, PlayerId> & {
