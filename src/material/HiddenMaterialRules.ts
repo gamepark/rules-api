@@ -4,7 +4,7 @@ import isEqual from 'lodash/isEqual'
 import mapValues from 'lodash/mapValues'
 import set from 'lodash/set'
 import unset from 'lodash/unset'
-import { IncompleteInformation } from '../IncompleteInformation'
+import { HiddenInformation } from '../HiddenInformation'
 import { PlayMoveContext } from '../Rules'
 import { MaterialItem } from './items'
 import { MaterialGame } from './MaterialGame'
@@ -29,7 +29,7 @@ import { HidingSecretsStrategy } from './SecretMaterialRules'
 
 export abstract class HiddenMaterialRules<P extends number = number, M extends number = number, L extends number = number>
   extends MaterialRules<P, M, L>
-  implements IncompleteInformation<MaterialGame<P, M, L>, MaterialMove<P, M, L>, MaterialMove<P, M, L>> {
+  implements HiddenInformation<MaterialGame<P, M, L>, MaterialMove<P, M, L>, MaterialMove<P, M, L>> {
 
   constructor(game: MaterialGame<P, M, L>, private readonly client?: { player?: P }) {
     super(game)
