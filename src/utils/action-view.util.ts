@@ -1,9 +1,9 @@
 import { Action } from '../Action'
 import { hasHiddenInformation, HiddenInformation } from '../HiddenInformation'
-import { hasRandomMove } from '../RandomMove'
 import { Rules } from '../Rules'
 import { hasSecretInformation } from '../SecretInformation'
 import { applyAutomaticMoves } from './automatic-moves.util'
+import { hasRandomMove } from './random.util'
 
 export type ActionWithViews<Move = any, MoveView = Move, PlayerId = any> = {
   action: Action<Move, PlayerId>
