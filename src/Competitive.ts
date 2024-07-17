@@ -33,7 +33,7 @@ export interface CompetitiveScore<Game = any, Move = any, PlayerId = any> extend
  */
 export interface CompetitiveRank<Game = any, Move = any, PlayerId = any> extends Rules<Game, Move, PlayerId> {
   /**
-   * Rank two players when game is over (@see {Array.sort})
+   * Rank two players when game is over (see {@link Array.sort})
    *
    * @param playerA Player A to compare
    * @param playerB player B to compare
