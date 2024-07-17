@@ -1,6 +1,6 @@
-import { hasRandomMove } from '../RandomMove'
 import { Rules } from '../Rules'
 import { loopWithFuse } from './loops.util'
+import { hasRandomMove } from './random.util'
 
 export function applyAutomaticMoves<Game, Move, PlayerId>(rules: Rules<Game, Move, PlayerId>, moves: Move[] = [], preprocessMove?: (move: Move) => void) {
   loopWithFuse(() => {
@@ -14,5 +14,5 @@ export function applyAutomaticMoves<Game, Move, PlayerId>(rules: Rules<Game, Mov
     const consequences = rules.play(JSON.parse(JSON.stringify(randomizedMove))) ?? []
     moves.unshift(...consequences)
     return true
-  }, {errorFn: () => new Error(`Infinite loop detected while applying move consequences: ${JSON.stringify(moves)})`)})
+  }, { errorFn: () => new Error(`Infinite loop detected while applying move consequences: ${JSON.stringify(moves)})`) })
 }

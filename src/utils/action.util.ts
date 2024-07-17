@@ -1,7 +1,7 @@
 import { Action } from '../Action'
-import { hasRandomMove } from '../RandomMove'
 import { Rules } from '../Rules'
 import { applyAutomaticMoves } from './automatic-moves.util'
+import { hasRandomMove } from './random.util'
 
 export function playAction<Game, Move, PlayerId>(rules: Rules<Game, Move, PlayerId>, move: Move, playerId: PlayerId): Action<Move, PlayerId> {
   if (hasRandomMove(rules)) {

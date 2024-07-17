@@ -1,6 +1,5 @@
 import { GameSetup } from '../GameSetup'
-import { hasRandomMove } from '../RandomMove'
-import { applyAutomaticMoves } from '../utils'
+import { applyAutomaticMoves, hasRandomMove } from '../utils'
 import { Material } from './items'
 import { MaterialGame } from './MaterialGame'
 import { MaterialRules, MaterialRulesCreator } from './MaterialRules'
