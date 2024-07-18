@@ -1,6 +1,7 @@
 import { MaterialItem } from './items'
-import { DisplayedItem, HelpDisplay, MaterialMove } from './moves'
+import { DisplayedItem, HelpDisplay } from './moves'
 import { RuleStep } from './rules'
+import { TutorialState } from './tutorial'
 
 export type MaterialGame<Player extends number = number,
   MaterialType extends number = number,
@@ -11,8 +12,5 @@ export type MaterialGame<Player extends number = number,
   memory: Record<keyof any, any>
   helpDisplay?: HelpDisplay<Player, MaterialType, LocationType>
   droppedItem?: DisplayedItem<MaterialType>
-  tutorialStep?: number
-  tutorialPopupClosed?: boolean
-  tutorialStepComplete?: boolean
-  tutorialInterrupt?: MaterialMove<Player, MaterialType, LocationType>[]
+  tutorial?: TutorialState
 }
