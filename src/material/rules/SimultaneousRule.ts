@@ -1,4 +1,5 @@
-import { MaterialMove } from '../moves'
+import { PlayMoveContext } from '../../Rules'
+import { EndPlayerTurn, MaterialMove } from '../moves'
 import { MaterialMoveBuilder } from './MaterialMoveBuilder'
 import { MaterialRulesPart } from './MaterialRulesPart'
 
@@ -17,12 +18,15 @@ export abstract class SimultaneousRule<Player extends number = number, MaterialT
 
   abstract getActivePlayerLegalMoves(playerId: Player): MaterialMove<Player, MaterialType, LocationType>[]
 
-  getAutomaticMoves(): MaterialMove<Player, MaterialType, LocationType>[] {
-    if (!this.game.rule?.players?.length) {
-      return this.getMovesAfterPlayersDone()
-    }
+  onPlayerTurnEnd(_move: EndPlayerTurn<Player>, _context?: PlayMoveContext): MaterialMove<Player, MaterialType, LocationType>[] {
     return []
   }
 
   abstract getMovesAfterPlayersDone(): MaterialMove<Player, MaterialType, LocationType>[]
+}
+
+export function isSimultaneousRule<P extends number = number, M extends number = number, L extends number = number>(
+  rule?: MaterialRulesPart<P, M, L>
+): rule is SimultaneousRule<P, M, L> {
+  return rule !== undefined && typeof (rule as SimultaneousRule<P, M, L>).getMovesAfterPlayersDone === 'function'
 }
