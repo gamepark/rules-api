@@ -42,7 +42,7 @@ export const directions = getEnumValues(Direction)
 export const getSquareInDirection = (origin: Partial<XYCoordinates>, direction: Direction, distance = 1): XYCoordinates => {
   if (origin.x === undefined || origin.y === undefined) throw new Error('Missing x or y to getSquareInDirection')
   return {
-    x: direction === Direction.East ? origin.x - distance : direction === Direction.West ? origin.x + distance : origin.x,
+    x: direction === Direction.East ? origin.x + distance : direction === Direction.West ? origin.x - distance : origin.x,
     y: direction === Direction.North ? origin.y - distance : direction === Direction.South ? origin.y + distance : origin.y
   }
 }
