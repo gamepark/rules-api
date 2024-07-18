@@ -26,7 +26,7 @@ import {
   RuleMove,
   RuleMoveType
 } from './moves'
-import { MaterialRulesPart, MaterialRulesPartCreator } from './rules'
+import { isSimultaneousRule, MaterialRulesPart, MaterialRulesPartCreator } from './rules'
 
 /**
  * The MaterialRules class is the main class to implement the rules of a board game with the "Material oriented" approach.
@@ -210,6 +210,12 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
         if (move.type === RuleMoveType.EndPlayerTurn) {
           if (this.game.rule?.players) {
             this.game.rule.players = this.game.rule.players.filter(player => player !== move.player)
+            if (isSimultaneousRule(rulesStep)) {
+              consequences.push(...rulesStep.onPlayerTurnEnd(move, context))
+              if (this.game.rule.players.length === 0) {
+                consequences.push(...rulesStep.getMovesAfterPlayersDone())
+              }
+            }
           }
         } else {
           consequences.push(...this.changeRule(move, context))
