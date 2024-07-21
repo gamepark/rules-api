@@ -235,12 +235,12 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
             this.game.droppedItem = move.item
             break
           case LocalMoveType.SetTutorialStep:
-            this.game.tutorialStep = move.step
-            delete this.game.tutorialPopupClosed
-            delete this.game.tutorialStepComplete
+            this.game.tutorial!.step = move.step
+            this.game.tutorial!.stepComplete = false
+            this.game.tutorial!.popupClosed = false
             break
           case LocalMoveType.CloseTutorialPopup:
-            this.game.tutorialPopupClosed = true
+            this.game.tutorial!.popupClosed = true
         }
     }
 
