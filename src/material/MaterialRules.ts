@@ -63,7 +63,7 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
   readonly locationsStrategies: Partial<Record<MaterialType, Partial<Record<LocationType, LocationStrategy<Player, MaterialType, LocationType>>>>> = {}
 
   /**
-   *
+   * Helper function to manipulate the material items of the game. See {@link Material}.
    *
    * @param type The type of Material we want to work on
    * @returns a Material instance to manipulate all the material of that type in current game state.
