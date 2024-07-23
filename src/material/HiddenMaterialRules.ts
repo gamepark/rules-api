@@ -27,6 +27,12 @@ import {
 } from './moves'
 import { HidingSecretsStrategy } from './SecretMaterialRules'
 
+/**
+ * Implement HiddenMaterialRules when you want to use the {@link MaterialRules} approach with {@link HiddenInformation}.
+ * Using some {@link HidingStrategy} allows to enforce the security of a game with hidden information easily.
+ * If the game has secret information (some players have information not available to others, link cards in their hand), then you
+ * must implement {@link SecretMaterialRules} instead.
+ */
 export abstract class HiddenMaterialRules<P extends number = number, M extends number = number, L extends number = number>
   extends MaterialRules<P, M, L>
   implements HiddenInformation<MaterialGame<P, M, L>, MaterialMove<P, M, L>, MaterialMove<P, M, L>> {
@@ -35,6 +41,12 @@ export abstract class HiddenMaterialRules<P extends number = number, M extends n
     super(game)
   }
 
+  /**
+   * A hiding strategy allows to hide automatically some information about an item when it is at a specific location type.
+   * Usually, we hide the item id (or a part of it).
+   * Example: {[MaterialType.Card]: {[LocationType.Deck]: hideItemId}} will hide the id of the cards in the deck to everybody.
+   * See {@link HidingStrategy}
+   */
   abstract readonly hidingStrategies: Partial<Record<M, Partial<Record<L, HidingStrategy<P, L>>>>>
 
   randomize(move: MaterialMove<P, M, L>): MaterialMove<P, M, L> & MaterialMoveRandomized<P, M, L> {
@@ -54,10 +66,16 @@ export abstract class HiddenMaterialRules<P extends number = number, M extends n
       (isMoveItemsAtOnce(move) && this.game.players.some(player => this.moveAtOnceWillRevealSomething(move, player)))
   }
 
+  /**
+   * Items that can be hidden cannot merge by default, to prevent hidden items to merge only because they have no id.
+   */
   itemsCanMerge(type: M): boolean {
     return !this.hidingStrategies[type]
   }
 
+  /**
+   * Moves that reveal some information (like drawing a card) cannot be predicted by the player.
+   */
   isUnpredictableMove(move: MaterialMove<P, M, L>, player: P): boolean {
     if (isMoveItem(move)) {
       return this.moveItemWillRevealSomething(move, player)
@@ -74,14 +92,24 @@ export abstract class HiddenMaterialRules<P extends number = number, M extends n
     }
   }
 
+  /**
+   * Moves than reveals an information to someone cannot be undone by default
+   */
   protected moveBlocksUndo(move: MaterialMove<P, M, L>): boolean {
     return super.moveBlocksUndo(move) || this.moveRevealsSomething(move)
   }
 
+  /**
+   * @param move A move to test
+   * @returns true if the move revealed something to some player
+   */
   protected moveRevealsSomething(move: MaterialMove<P, M, L>): boolean {
     return (isMoveItem(move) || isMoveItemsAtOnce(move)) && !!move.reveal
   }
 
+  /**
+   * With the material approach, we can offer a default working implementation for {@link HiddenInformation.getView}
+   */
   getView(player?: P): MaterialGame<P, M, L> {
     return {
       ...this.game,
@@ -114,6 +142,10 @@ export abstract class HiddenMaterialRules<P extends number = number, M extends n
     return this.getItemHiddenPaths(type, item, player).length > 0
   }
 
+  /**
+   * To be able to know if a MoveItem cannot be undone, the server flags the moves with a "reveal" property.
+   * This difference must be integrated without error during the callback.
+   */
   canIgnoreServerDifference(clientMove: MaterialMove<P, M, L>, serverMove: MaterialMove<P, M, L>): boolean {
     if (isMoveItem(clientMove) && isMoveItem(serverMove)) {
       const { reveal, ...serverMoveWithoutReveal } = serverMove
@@ -122,6 +154,9 @@ export abstract class HiddenMaterialRules<P extends number = number, M extends n
     return false
   }
 
+  /**
+   * With the material approach, we can offer a default working implementation for {@link HiddenInformation.getMoveView}
+   */
   getMoveView(move: MaterialMoveRandomized<P, M, L>, player?: P): MaterialMove<P, M, L> {
     if (move.kind === MoveKind.ItemMove && move.itemType in this.hidingStrategies) {
       switch (move.type) {
@@ -213,6 +248,9 @@ export abstract class HiddenMaterialRules<P extends number = number, M extends n
     return !hiddenPaths.length
   }
 
+  /**
+   * Override of {@link MaterialRules.play} that also removes the hidden information from items, for example when a card is flipped face down
+   */
   play(move: MaterialMoveRandomized<P, M, L> | MaterialMoveView<P, M, L>, context?: PlayMoveContext): MaterialMove<P, M, L>[] {
     const result = super.play(move, context)
 
@@ -236,7 +274,18 @@ export abstract class HiddenMaterialRules<P extends number = number, M extends n
   }
 }
 
+/**
+ * A Hiding Strategy is a function that takes an item and returns a list of path to hide in the item object.
+ * See {@link hideItemId} and {@link hideFront} for 2 hiding strategy frequently used.
+ */
 export type HidingStrategy<P extends number = number, L extends number = number> = (item: MaterialItem<P, L>) => string[]
 
+/**
+ * Hiding strategy that removes the item id
+ */
 export const hideItemId: HidingStrategy = () => ['id']
+
+/**
+ * Hiding strategy that removes "id.front" from the item (when we have cards with composite ids, back & front)
+ */
 export const hideFront: HidingStrategy = () => ['id.front']
