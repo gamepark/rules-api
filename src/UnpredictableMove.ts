@@ -27,4 +27,4 @@ export interface UnpredictableMoves<M = any, P = any> {
  */
 export const hasUnpredictableMoves = <G = any, M = any, P = any>(
   rules: Rules<G, M, P>
-): rules is Rules<G, M, P> & UnpredictableMoves<M> => typeof rules.isUnpredictableMove === 'function'
+): rules is Rules<G, M, P> & UnpredictableMoves<M, P> => typeof rules.isUnpredictableMove === 'function'
