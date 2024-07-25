@@ -6,7 +6,7 @@ import set from 'lodash/set'
 import unset from 'lodash/unset'
 import { IncompleteInformation } from '../IncompleteInformation'
 import { PlayMoveContext } from '../Rules'
-import { MaterialItem } from './items'
+import { Material, MaterialItem } from './items'
 import { MaterialGame } from './MaterialGame'
 import { MaterialRules } from './MaterialRules'
 import {
@@ -15,6 +15,7 @@ import {
   isMoveItem,
   isMoveItemsAtOnce,
   isShuffle,
+  ItemMove,
   ItemMoveType,
   MaterialMove,
   MaterialMoveRandomized,
@@ -37,25 +38,33 @@ export abstract class HiddenMaterialRules<P extends number = number, M extends n
 
   abstract readonly hidingStrategies: Partial<Record<M, Partial<Record<L, HidingStrategy<P, L>>>>>
 
+  // TODO: Remove once all front use v6.24.0 - override for backward compatibility with all game front-end built on rules-api v6.23.0
   randomize(move: MaterialMove<P, M, L>): MaterialMove<P, M, L> & MaterialMoveRandomized<P, M, L> {
-    if (this.isRevealingItemMove(move)) {
-      // We need to know if a MoveItem has revealed something to prevent the undo in that case.
-      // To know that, we need the position of the item before the move.
-      // To prevent having to recalculate the game state before the move, we flag the move in the database with "reveal: {}".
-      // This flag indicate that something was revealed to someone.
-      // We use the "randomize" function because is the where we can "preprocess" the move and transform it after checking it is legal and before it is saved.
-      return {...move, reveal: {}}
+    if (this.isRevealingItemMove(move) && !move.reveal) {
+      return { ...move, reveal: {} }
     }
     return super.randomize(move)
   }
 
+  // TODO: Remove once all front use v6.24.0 - override for backward compatibility with all game front-end built on rules-api v6.23.0
   isLegalMove(playerId: P, move: MaterialMove<P, M, L>): boolean {
-    if (isMoveItem(move) && move.reveal) {
-      // override for backward compatibility with all game front-end built on rules-api <= 6.22
-      const {reveal, ...moveWithoutReveal} = move
-      return super.isLegalMove(playerId, moveWithoutReveal)
+    if (this.isRevealingItemMove(move)) {
+      return super.isLegalMove(playerId, { ...move, reveal: {} })
     }
     return super.isLegalMove(playerId, move)
+  }
+
+  override material(type: M): Material<P, M, L> {
+    return new Material(type, Array.from((this.game.items[type] ?? []).entries()).filter(entry => entry[1].quantity !== 0),
+      (move: ItemMove<P, M, L>) => {
+        if (this.isRevealingItemMove(move)) {
+          // We need to know if a MoveItem has revealed something to prevent the undo in that case.
+          // To know that, we need the position of the item before the move.
+          // To prevent having to recalculate the game state before the move, we flag the move in the database with "reveal: {}".
+          // This flag indicate that something was revealed to someone.
+          move.reveal = {}
+        }
+      })
   }
 
   private isRevealingItemMove(move: MaterialMove<P, M, L>): move is MoveItem<P, M, L> | MoveItemsAtOnce<P, M, L> {

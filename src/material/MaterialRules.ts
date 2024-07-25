@@ -52,14 +52,18 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
     return this.getMemory(player).remind(key)
   }
 
-  get rulesStep(): MaterialRulesPart<Player, MaterialType, LocationType> | undefined {
-    if (!this.game.rule) return
-    const RulesStep = this.rules[this.game.rule.id]
-    if (!RulesStep) {
-      console.error(`The rules class for rules id ${this.game.rule.id} is missing`)
-      return
+  createRule(): MaterialRulesPart<Player, MaterialType, LocationType> | undefined
+  createRule(Rule: MaterialRulesPartCreator<Player, MaterialType, LocationType>, ...args: any): MaterialRulesPart<Player, MaterialType, LocationType>
+  createRule(Rule?: MaterialRulesPartCreator<Player, MaterialType, LocationType>, ...args: any): MaterialRulesPart<Player, MaterialType, LocationType> | undefined {
+    if (!Rule) {
+      if (!this.game.rule) return
+      Rule = this.rules[this.game.rule.id]
+      if (!Rule) {
+        console.error(`The rules class for rules id ${this.game.rule.id} is missing`)
+        return
+      }
     }
-    return new RulesStep(this.game, type => this.material(type))
+    return new Rule(this.game, type => this.material(type), ...args)
   }
 
   mutator(type: MaterialType): MaterialMutator<Player, MaterialType, LocationType> {
@@ -71,7 +75,7 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
   }
 
   delegate(): Rules<MaterialGame<Player, MaterialType, LocationType>, MaterialMove<Player, MaterialType, LocationType>, Player> | undefined {
-    return this.rulesStep
+    return this.createRule()
   }
 
   randomize(
@@ -94,7 +98,7 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
   ): MaterialMove<Player, MaterialType, LocationType>[] {
 
     const consequences: MaterialMove<Player, MaterialType, LocationType>[] = []
-    const rulesStep = this.rulesStep
+    const rulesStep = this.createRule()
     switch (move.kind) {
       case MoveKind.ItemMove:
         if (rulesStep) {
@@ -147,7 +151,7 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
   }
 
   private changeRule(move: RuleMove<Player>, context?: PlayMoveContext): MaterialMove<Player, MaterialType, LocationType>[] {
-    const moves = this.rulesStep?.onRuleEnd(move, context) ?? []
+    const moves = this.createRule()?.onRuleEnd(move, context) ?? []
     const rule = this.game.rule
     switch (move.type) {
       case RuleMoveType.StartPlayerTurn:
@@ -163,7 +167,7 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
         delete this.game.rule
         break
     }
-    return moves.concat(this.rulesStep?.onRuleStart(move, rule, context) ?? [])
+    return moves.concat(this.createRule()?.onRuleStart(move, rule, context) ?? [])
   }
 
   canUndo(action: Action<MaterialMove<Player, MaterialType, LocationType>, Player>,

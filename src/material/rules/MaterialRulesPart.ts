@@ -9,8 +9,14 @@ import { RuleStep } from './RuleStep'
 export abstract class MaterialRulesPart<Player extends number = number, MaterialType extends number = number, LocationType extends number = number>
   extends Rules<MaterialGame<Player, MaterialType, LocationType>, MaterialMove<Player, MaterialType, LocationType>, Player> {
 
-  material(type: MaterialType): Material<Player, MaterialType, LocationType> {
-    return new Material(type, Array.from((this.game.items[type] ?? []).entries()).filter(entry => entry[1].quantity !== 0))
+  constructor(game: MaterialGame<Player, MaterialType, LocationType>,
+              protected readonly material: (type: MaterialType) => Material<Player, MaterialType, LocationType>
+                = (type: MaterialType) => new Material(type, Array.from((this.game.items[type] ?? []).entries()).filter(entry => entry[1].quantity !== 0))) {
+    super(game)
+  }
+
+  createRule(Rule: MaterialRulesPartCreator<Player, MaterialType, LocationType>, ...args: any): MaterialRulesPart<Player, MaterialType, LocationType> {
+    return new Rule(this.game, this.material, ...args)
   }
 
   beforeItemMove(_move: ItemMove<Player, MaterialType, LocationType>, _context?: PlayMoveContext): MaterialMove<Player, MaterialType, LocationType>[] {
@@ -68,6 +74,7 @@ export interface MaterialRulesPartCreator<Player extends number = number,
   LocationType extends number = number> {
   new(
     game: MaterialGame<Player, MaterialType, LocationType>,
-    material: (type: MaterialType) => Material<Player, MaterialType, LocationType>
+    material: (type: MaterialType) => Material<Player, MaterialType, LocationType>,
+    ...args: any
   ): MaterialRulesPart<Player, MaterialType, LocationType>
 }
