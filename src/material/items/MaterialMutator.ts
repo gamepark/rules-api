@@ -1,6 +1,6 @@
 import isEqual from 'lodash/isEqual'
 import merge from 'lodash/merge'
-import { Location, LocationStrategy } from '../location'
+import { isSameLocationArea, Location, LocationStrategy } from '../location'
 import {
   CreateItem,
   DeleteItem,
@@ -17,7 +17,20 @@ import {
 } from '../moves'
 import { Material, MaterialItem } from './index'
 
+/**
+ * Helper class to change the state of any {@link MaterialItem} in a game implemented with {@link MaterialRules}.
+ *
+ * @typeparam P - identifier of a player. Either a number or a numeric enum (eg: PlayerColor)
+ * @typeparam M - Numeric enum of the types of material manipulated in the game
+ * @typeparam L - Numeric enum of the types of location in the game where the material can be located
+ */
 export class MaterialMutator<P extends number = number, M extends number = number, L extends number = number> {
+  /**
+   * @param type Type of items this mutator will work on
+   * @param items Items to work with
+   * @param locationsStrategies The strategies that these items must follow
+   * @param canMerge Whether to items at the exact same location can merge into one item with a quantity
+   */
   constructor(
     private readonly type: M,
     private readonly items: MaterialItem<P, L>[],
@@ -26,6 +39,10 @@ export class MaterialMutator<P extends number = number, M extends number = numbe
   ) {
   }
 
+  /**
+   * Executes a move on the game items
+   * @param move
+   */
   applyMove(move: ItemMoveRandomized<P, M, L> | ItemMoveView<P, M, L>): void {
     switch (move.type) {
       case ItemMoveType.Create:
@@ -62,9 +79,16 @@ export class MaterialMutator<P extends number = number, M extends number = numbe
     }
   }
 
-  private findMergeIndex(newItem: MaterialItem<P, L>): number {
+  /**
+   * Find the index of an existing item we could merge a new item with (create a single item with a quantity)
+   *
+   * @param newItem An item to compare with existing items
+   * @returns {number} Index of the existing item we can merge with, or -1 if there is no possible merge
+   */
+  findMergeIndex(newItem: MaterialItem<P, L>): number {
     if (!this.canMerge) return -1
-    return this.items.findIndex(item => itemsCanMerge(item, newItem))
+    const { quantity: q1, ...data1 } = newItem
+    return this.items.findIndex(({ quantity: q2, ...data2 }) => q1 !== 0 && q2 !== 0 && isEqual(data1, data2))
   }
 
   private addItem(item: MaterialItem<P, L>): void {
@@ -77,6 +101,11 @@ export class MaterialMutator<P extends number = number, M extends number = numbe
     }
   }
 
+  /**
+   * Provides the index that the new item will have
+   * @param newItem An item that is going to be created
+   * @returns {number} the future index of that item
+   */
   getItemCreationIndex(newItem: MaterialItem<P, L>): number {
     const mergeIndex = this.findMergeIndex(newItem)
     if (mergeIndex !== -1) return mergeIndex
@@ -190,6 +219,11 @@ export class MaterialMutator<P extends number = number, M extends number = numbe
     }
   }
 
+  /**
+   * Provides the state of an item after it is moved
+   * @param move The move that is going to happen
+   * @return {MaterialItem} state of the item after the move is executed
+   */
   getItemAfterMove(move: MoveItem<P, M, L>): MaterialItem<P, L> {
     const item: MaterialItem<P, L> = this.getItemWithLocation(move.location, move.itemIndex)
     if (move.reveal) {
@@ -203,6 +237,12 @@ export class MaterialMutator<P extends number = number, M extends number = numbe
     return item
   }
 
+  /**
+   * Provides the state of an item after it is moved
+   * @param move The move that is going to happen
+   * @param index Index of the item to consider
+   * @return {MaterialItem} state of the item after the move is executed
+   */
   getItemAfterMoveAtOnce(move: MoveItemsAtOnce<P, M, L>, index: number): MaterialItem<P, L> {
     const item: MaterialItem<P, L> = this.getItemWithLocation(move.location, index)
     if (move.reveal && move.reveal[index]) {
@@ -211,7 +251,7 @@ export class MaterialMutator<P extends number = number, M extends number = numbe
     return item
   }
 
-  getItemWithLocation(location: Partial<Location<P, L>>, index: number): MaterialItem<P, L> {
+  private getItemWithLocation(location: Partial<Location<P, L>>, index: number): MaterialItem<P, L> {
     const moveLocation = JSON.parse(JSON.stringify(location))
     const actualItem = this.items[index]
     const newLocation = location.type === undefined ? { ...actualItem.location, ...moveLocation } : moveLocation
@@ -239,10 +279,3 @@ export class MaterialMutator<P extends number = number, M extends number = numbe
     }
   }
 }
-
-export const itemsCanMerge = ({ quantity: q1, ...data1 }: MaterialItem, { quantity: q2, ...data2 }: MaterialItem): boolean =>
-  q1 !== 0 && q2 !== 0 && isEqual(data1, data2)
-
-export const isSameLocationArea = (...locations: Partial<Location>[]): boolean => locations.every((l, _, [l0]) =>
-  l.type === l0.type && l.id === l0.id && l.player === l0.player && l.parent === l0.parent
-)
