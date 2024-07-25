@@ -37,7 +37,7 @@ import { isSimultaneousRule, MaterialRulesPart, MaterialRulesPartCreator } from 
  *
  * @typeparam Player - identifier of a player. Either a number or a numeric enum (eg: PlayerColor)
  * @typeparam MaterialType - Numeric enum of the types of material manipulated in the game
- * @typeparam LocationType - Numeric enum of the types of location in the game when the material can be located
+ * @typeparam LocationType - Numeric enum of the types of location in the game where the material can be located
  */
 export abstract class MaterialRules<Player extends number = number, MaterialType extends number = number, LocationType extends number = number>
   extends Rules<MaterialGame<Player, MaterialType, LocationType>, MaterialMove<Player, MaterialType, LocationType>, Player>
