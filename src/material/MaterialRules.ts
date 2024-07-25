@@ -4,6 +4,7 @@ import { Action } from '../Action'
 import { RandomMove } from '../RandomMove'
 import { PlayMoveContext, Rules } from '../Rules'
 import { Undo } from '../Undo'
+import { UnpredictableMoves } from '../UnpredictableMove'
 import { Material, MaterialMutator } from './items'
 import { LocationStrategy } from './location'
 import { MaterialGame } from './MaterialGame'
@@ -29,8 +30,10 @@ import { MaterialRulesPart, MaterialRulesPartCreator } from './rules'
 
 export abstract class MaterialRules<Player extends number = number, MaterialType extends number = number, LocationType extends number = number>
   extends Rules<MaterialGame<Player, MaterialType, LocationType>, MaterialMove<Player, MaterialType, LocationType>, Player>
-  implements RandomMove<MaterialMove<Player, MaterialType, LocationType>, MaterialMoveRandomized<Player, MaterialType, LocationType>>,
-    Undo<MaterialMove<Player, MaterialType, LocationType>, Player> {
+  implements RandomMove<MaterialMove<Player, MaterialType, LocationType>,
+    MaterialMoveRandomized<Player, MaterialType, LocationType>>,
+    Undo<MaterialMove<Player, MaterialType, LocationType>, Player>,
+    UnpredictableMoves<MaterialMove<Player, MaterialType, LocationType>> {
 
   material(type: MaterialType): Material<Player, MaterialType, LocationType> {
     return new Material(type, Array.from((this.game.items[type] ?? []).entries()).filter(entry => entry[1].quantity !== 0))

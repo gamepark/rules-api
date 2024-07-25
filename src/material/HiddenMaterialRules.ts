@@ -44,18 +44,9 @@ export abstract class HiddenMaterialRules<P extends number = number, M extends n
       // To prevent having to recalculate the game state before the move, we flag the move in the database with "reveal: {}".
       // This flag indicate that something was revealed to someone.
       // We use the "randomize" function because is the where we can "preprocess" the move and transform it after checking it is legal and before it is saved.
-      return {...move, reveal: {}}
+      return { ...move, reveal: {} }
     }
     return super.randomize(move)
-  }
-
-  isLegalMove(playerId: P, move: MaterialMove<P, M, L>): boolean {
-    if (isMoveItem(move) && move.reveal) {
-      // override for backward compatibility with all game front-end built on rules-api <= 6.22
-      const {reveal, ...moveWithoutReveal} = move
-      return super.isLegalMove(playerId, moveWithoutReveal)
-    }
-    return super.isLegalMove(playerId, move)
   }
 
   private isRevealingItemMove(move: MaterialMove<P, M, L>): move is MoveItem<P, M, L> | MoveItemsAtOnce<P, M, L> {
@@ -121,6 +112,14 @@ export abstract class HiddenMaterialRules<P extends number = number, M extends n
 
   private itemHasHiddenInformation(type: M, item: MaterialItem<P, L>, player?: P): boolean {
     return this.getItemHiddenPaths(type, item, player).length > 0
+  }
+
+  canIgnoreServerDifference(clientMove: MaterialMove<P, M, L>, serverMove: MaterialMove<P, M, L>): boolean {
+    if (isMoveItem(clientMove) && isMoveItem(serverMove)) {
+      const { reveal, ...serverMoveWithoutReveal } = serverMove
+      return isEqual(clientMove, serverMoveWithoutReveal)
+    }
+    return false
   }
 
   getMoveView(move: MaterialMoveRandomized<P, M, L>, player?: P): MaterialMove<P, M, L> {
