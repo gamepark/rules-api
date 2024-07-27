@@ -2,7 +2,8 @@ import { Material, MaterialItem } from '../../items'
 import { LocationStrategy } from './LocationStrategy'
 
 /**
- * This strategy help to maintain a consecutive sequence of numbers starting with 0 for items at the same location, for example a deck or a hand of cards
+ * This strategy help to maintain a consecutive sequence of numbers starting with 0 for items at the same location,
+ * for example a deck or a hand of cards.
  */
 export class PositiveSequenceStrategy<P extends number = number, M extends number = number, L extends number = number> implements LocationStrategy<P, M, L> {
   axis: 'x' | 'y' | 'z'

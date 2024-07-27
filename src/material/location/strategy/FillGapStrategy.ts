@@ -2,7 +2,8 @@ import { Material, MaterialItem } from '../../items'
 import { LocationStrategy } from './LocationStrategy'
 
 /**
- * This strategy attributes the first gap in a sequence
+ * This strategy attributes the first gap in a sequence, and leaves a gap when an item is removed.
+ * Use for river-type mechanisms for instance.
  */
 export class FillGapStrategy<P extends number = number, M extends number = number, L extends number = number> implements LocationStrategy<P, M, L> {
   axis: 'x' | 'y' | 'z'
