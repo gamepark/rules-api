@@ -10,7 +10,7 @@ import { ItemMoveType } from './ItemMoveType'
  * Use this to roll dices or flip coins, for instance.
  * Override "roll" function in {@link MaterialRules} to provide a custom and random "location.rotation" value when the server randomizes the move
  *
- * @property itemIndex index of the item to move
+ * @property itemIndex index of the item to roll
  * @property location the new location (without the rotation when the move is built, then with the randomized location after {@link RandomMove} is applied
  */
 export type RollItem<P extends number = number, M extends number = number, L extends number = number> = MaterialMoveCommon<M> & {
