@@ -8,7 +8,7 @@ import { MoveKind } from '../MoveKind'
  * Use {@link Material} utility to build the move easily
  *
  * @property itemIndex index of the item to delete
- * @quantity if provided, removes the specified quantity from the item. Otherwise, remove all the item.
+ * @property quantity if provided, removes the specified quantity from the item. Otherwise, remove all the item.
  */
 export type DeleteItem<MaterialType extends number = number> = MaterialMoveCommon<MaterialType> & {
   type: typeof ItemMoveType.Delete
