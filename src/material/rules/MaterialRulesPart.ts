@@ -2,8 +2,7 @@ import { PlayMoveContext, Rules } from '../../Rules'
 import { Material } from '../items'
 import { MaterialGame } from '../MaterialGame'
 import { GameMemory, PlayerMemory } from '../memory'
-import { CustomMove, ItemMove, MaterialMove, RuleMove } from '../moves'
-import { MaterialMoveBuilder } from './MaterialMoveBuilder'
+import { CustomMove, ItemMove, MaterialMove, MaterialMoveBuilder, RuleMove } from '../moves'
 import { RuleStep } from './RuleStep'
 
 export abstract class MaterialRulesPart<Player extends number = number, MaterialType extends number = number, LocationType extends number = number>

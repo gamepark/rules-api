@@ -1,6 +1,5 @@
 import { PlayMoveContext } from '../../Rules'
-import { EndPlayerTurn, MaterialMove } from '../moves'
-import { MaterialMoveBuilder } from './MaterialMoveBuilder'
+import { EndPlayerTurn, MaterialMove, MaterialMoveBuilder } from '../moves'
 import { MaterialRulesPart } from './MaterialRulesPart'
 
 export abstract class SimultaneousRule<Player extends number = number, MaterialType extends number = number, LocationType extends number = number>

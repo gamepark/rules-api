@@ -1,4 +1,4 @@
-import { CustomMove, EndGame, EndPlayerTurn, MoveKind, RuleMoveType, StartPlayerTurn, StartRule, StartSimultaneousRule } from '../moves'
+import { CustomMove, EndGame, EndPlayerTurn, MoveKind, RuleMoveType, StartPlayerTurn, StartRule, StartSimultaneousRule } from './index'
 
 export namespace MaterialMoveBuilder {
 

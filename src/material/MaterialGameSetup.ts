@@ -4,8 +4,7 @@ import { Material } from './items'
 import { MaterialGame } from './MaterialGame'
 import { MaterialRules, MaterialRulesCreator } from './MaterialRules'
 import { GameMemory, PlayerMemory } from './memory'
-import { MaterialMove } from './moves'
-import { MaterialMoveBuilder } from './rules'
+import { MaterialMove, MaterialMoveBuilder } from './moves'
 
 /**
  * Helper class to implement {@link GameSetup} when using the {@link MaterialRules} approach.
