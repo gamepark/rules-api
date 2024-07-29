@@ -116,7 +116,7 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
       console.error(`The rules class for rules id ${this.game.rule.id} is missing`)
       return
     }
-    return new RulesStep(this.game, type => this.material(type))
+    return new RulesStep(this.game)
   }
 
   /**
