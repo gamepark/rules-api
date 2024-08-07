@@ -125,13 +125,15 @@ export class Material<P extends number = number, M extends number = number, L ex
    * Filter and return a new instance with only the items that match a specific index, or a specific index predicate
    * @param {number | function} arg The index to keep, or the predicate matching the indexes to keep
    */
-  index(arg: number | number[] | ((index: number) => boolean)): this {
+  index(arg?: number | number[] | ((index: number) => boolean)): this {
     switch (typeof arg) {
       case 'function':
         return this.filter((_, index) => arg(index))
       case 'number':
         const item = this.entries.find(([index]) => index === arg)
         return this.new(item ? [item] : [])
+      case 'undefined':
+        return this.new([])
       default:
         const items = this.entries.filter(([i]) => arg.includes(i))
         return this.new(items)
