@@ -342,11 +342,7 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
    * @returns true if the move outcome cannot be predicted on client side
    */
   isUnpredictableMove(move: MaterialMove<Player, MaterialType, LocationType>, _player: Player): boolean {
-    return this.isRandomMove(move)
-  }
-
-  private isRandomMove(move: MaterialMove<Player, MaterialType, LocationType>): boolean {
-    return isShuffle(move) || isRoll(move)
+    return isRoll(move)
   }
 
   /**
