@@ -5,6 +5,7 @@ import { MaterialGame } from './MaterialGame'
 import { MaterialRules, MaterialRulesCreator } from './MaterialRules'
 import { GameMemory, PlayerMemory } from './memory'
 import { MaterialMove, MaterialMoveBuilder } from './moves'
+import { TutorialState } from './tutorial'
 
 /**
  * Helper class to implement {@link GameSetup} when using the {@link MaterialRules} approach.
@@ -33,9 +34,11 @@ export abstract class MaterialGameSetup<P extends number = number, M extends num
   /**
    * Entry point for {@link GameSetup}
    * @param options Options of the game
+   * @param tutorial Initial tutorial state if any
+   * @returns the initial state of the game
    */
-  setup(options: Options): MaterialGame<P, M, L> {
-    this.game = { players: getPlayerIds(options), items: {}, memory: {} }
+  setup(options: Options, tutorial?: TutorialState): MaterialGame<P, M, L> {
+    this.game = { players: getPlayerIds(options), items: {}, memory: {}, tutorial }
     this.setupMaterial(options)
     this.start(options)
     return this.game
