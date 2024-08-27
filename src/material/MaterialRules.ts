@@ -208,7 +208,7 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
         break
       case MoveKind.RulesMove:
         if (move.type === RuleMoveType.EndPlayerTurn) {
-          if (this.game.rule?.players) {
+          if (this.game.rule?.players?.includes(move.player)) {
             this.game.rule.players = this.game.rule.players.filter(player => player !== move.player)
             if (isSimultaneousRule(rulesStep)) {
               consequences.push(...rulesStep.onPlayerTurnEnd(move, context))
@@ -216,6 +216,8 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
                 consequences.push(...rulesStep.getMovesAfterPlayersDone())
               }
             }
+          } else {
+            console.warn('EndPlayerTurn was triggered for a player which is already inactive')
           }
         } else {
           consequences.push(...this.changeRule(move, context))
