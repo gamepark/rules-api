@@ -179,7 +179,7 @@ export abstract class HiddenMaterialRules<P extends number = number, M extends n
     if (!move.reveal) return move
     const revealedPaths = this.getMoveItemRevealedPath(move, player)
     if (!revealedPaths.length) return move
-    const item = this.material(move.itemType).getItem(move.itemIndex)!
+    const item = this.material(move.itemType).getItem(move.itemIndex)
     const moveView = { ...move, reveal: {} }
     for (const path of revealedPaths) {
       set(moveView.reveal, path, get(item, path))
@@ -193,7 +193,7 @@ export abstract class HiddenMaterialRules<P extends number = number, M extends n
     for (const index of move.indexes) {
       const revealedPaths = this.getMoveAtOnceRevealedPath(move, index, player)
       if (!revealedPaths.length) continue
-      const item = this.material(move.itemType).getItem(index)!
+      const item = this.material(move.itemType).getItem(index)
       moveView.reveal![index] = {}
       for (const path of revealedPaths) {
         set(moveView.reveal![index], path, get(item, path))
@@ -204,14 +204,14 @@ export abstract class HiddenMaterialRules<P extends number = number, M extends n
   }
 
   private getMoveItemRevealedPath(move: MoveItem<P, M, L>, player?: P): string[] {
-    const item = this.material(move.itemType).getItem(move.itemIndex)!
+    const item = this.material(move.itemType).getItem(move.itemIndex)
     const hiddenPathsBefore = this.getItemHiddenPaths(move.itemType, item, player)
     const hiddenPathsAfter = this.getItemHiddenPaths(move.itemType, this.mutator(move.itemType).getItemAfterMove(move), player)
     return difference(hiddenPathsBefore, hiddenPathsAfter)
   }
 
   private getMoveAtOnceRevealedPath(move: MoveItemsAtOnce<P, M, L>, itemIndex: number, player?: P): string[] {
-    const item = this.material(move.itemType).getItem(itemIndex)!
+    const item = this.material(move.itemType).getItem(itemIndex)
     const hiddenPathsBefore = this.getItemHiddenPaths(move.itemType, item, player)
     const hiddenPathsAfter = this.getItemHiddenPaths(move.itemType, this.mutator(move.itemType).getItemAfterMoveAtOnce(move, itemIndex), player)
     return difference(hiddenPathsBefore, hiddenPathsAfter)
@@ -234,12 +234,12 @@ export abstract class HiddenMaterialRules<P extends number = number, M extends n
   private canSeeShuffleResult(move: Shuffle<M>, player?: P): boolean {
     if (!this.hidingStrategies[move.itemType]) return true
     const material = this.material(move.itemType)
-    const hiddenPaths = this.getItemHiddenPaths(move.itemType, material.getItem(move.indexes[0])!, player)
+    const hiddenPaths = this.getItemHiddenPaths(move.itemType, material.getItem(move.indexes[0]), player)
     if (process.env.NODE_ENV === 'development' && move.indexes.some(index =>
-      !isEqual(hiddenPaths, this.getItemHiddenPaths(move.itemType, material.getItem(index)!, player))
+      !isEqual(hiddenPaths, this.getItemHiddenPaths(move.itemType, material.getItem(index), player))
     )) {
       throw new RangeError(`You cannot shuffle items with different hiding strategies: ${
-        JSON.stringify(move.indexes.map(index => this.getItemHiddenPaths(move.itemType, material.getItem(index)!, player)))
+        JSON.stringify(move.indexes.map(index => this.getItemHiddenPaths(move.itemType, material.getItem(index), player)))
       }`)
     }
     // TODO: if we shuffle a hand of items partially hidden, we should send the partially visible information to the client.

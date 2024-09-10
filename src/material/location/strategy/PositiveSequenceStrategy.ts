@@ -30,7 +30,7 @@ export class PositiveSequenceStrategy<P extends number = number, M extends numbe
     if (item.location[this.axis] === undefined) {
       item.location[this.axis] = material.length - 1
     }
-    const x = material.getItem(index)!.location[this.axis]
+    const x = material.getItem(index).location[this.axis]
     if (x === undefined) return
     const newX = item.location[this.axis]!
     if (x < newX) {
