@@ -8,7 +8,7 @@ import { Location, Material, MaterialMove } from '../material'
 /**
  * This class help manipulate any kind of money with arbitrary unit values, like a set of coins of values 1, 2, 5, 10 for instance.
  */
-export class Money<Unit extends number = number> {
+export class Money<Unit extends number = number, P extends number = number, M extends number = number, L extends number = number> {
   constructor(private units: Unit[]) {
     this.units.sort((a, b) => a - b)
   }
@@ -18,7 +18,7 @@ export class Money<Unit extends number = number> {
    * @param material The material to count
    * @returns the sum of each item id multiplied by its quantity
    */
-  count(material: Material) {
+  count(material: Material<P, M, L>) {
     return sumBy(material.getItems<Unit>(), item => (item.id ?? 1) * (item.quantity ?? 1))
   }
 
@@ -29,9 +29,9 @@ export class Money<Unit extends number = number> {
    * @param amount Amount to create or delete
    * @returns the moves that need to be played to perform the operation
    */
-  createOrDelete(material: Material, location: Location, amount: number): MaterialMove[] {
+  createOrDelete(material: Material<P, M, L>, location: Location<P, L>, amount: number): MaterialMove<P, M, L>[] {
     material = material.location(l => isEqual(l, location))
-    const moves: MaterialMove[] = []
+    const moves: MaterialMove<P, M, L>[] = []
     const delta = amount > 0 ? this.gain(amount) : this.spend(mapValues(keyBy(this.units), unit => material.id(unit).getQuantity()), -amount)
     for (let index = this.units.length - 1; index >= 0; index--) {
       const unit = this.units[index]
@@ -52,10 +52,10 @@ export class Money<Unit extends number = number> {
    * @param amount Amount of money to transfer
    * @returns the moves that need to be played to perform the operation
    */
-  moveAmount(material: Material, origin: Location, target: Location, amount: number): MaterialMove[] {
+  moveAmount(material: Material<P, M, L>, origin: Location<P, L>, target: Location<P, L>, amount: number): MaterialMove<P, M, L>[] {
     if (!amount) return []
     if (amount < 0) return this.moveAmount(material, target, origin, -amount)
-    const moves: MaterialMove[] = []
+    const moves: MaterialMove<P, M, L>[] = []
     const originMaterial = material.location(l => isEqual(l, origin))
     const targetMaterial = material.location(l => isEqual(l, target))
     const originUnits = mapValues(keyBy(this.units), unit => originMaterial.id(unit).getQuantity())
