@@ -22,7 +22,7 @@
     "strictNullChecks": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "removeComments": true,
+    "removeComments": false,
     "allowSyntheticDefaultImports": true
   },
   "exclude": [
