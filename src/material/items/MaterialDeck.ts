@@ -1,6 +1,6 @@
 import { Location } from '../location'
 import { MoveItem } from '../moves'
-import { Material } from './Material'
+import { Material } from './index'
 import { MaterialItem } from './MaterialItem'
 
 /**

@@ -7,6 +7,7 @@ import { Location, Material, MaterialMove } from '../material'
 
 /**
  * This class help manipulate any kind of money with arbitrary unit values, like a set of coins of values 1, 2, 5, 10 for instance.
+ * @deprecated use {@link MaterialMoney} instead
  */
 export class Money<Unit extends number = number, P extends number = number, M extends number = number, L extends number = number> {
   constructor(private units: Unit[]) {

@@ -18,10 +18,10 @@ import {
   SelectItem,
   Shuffle
 } from '../moves'
-import { MaterialDeck } from './MaterialDeck'
+import { MaterialDeck, MaterialMoney } from './index'
 import { MaterialItem } from './MaterialItem'
 
-type ItemEntry<P extends number = number, L extends number = number> = [number, MaterialItem<P, L>]
+export type ItemEntry<P extends number = number, L extends number = number> = [number, MaterialItem<P, L>]
 
 /**
  * The Material class is the core helper class that help manipulate the game items in a simple way.
@@ -610,5 +610,14 @@ export class Material<P extends number = number, M extends number = number, L ex
    */
   deck(selector: (item: MaterialItem<P, L>) => number = item => -item.location.x!) {
     return new MaterialDeck(this.type, this.items, this.processMove, this.entries).sort(selector)
+  }
+
+  /**
+   * Return a new {@link MaterialMoney} helper class, to deal with moving money units easily.
+   *
+   * @param units The different units that exists in stock to count this money
+   */
+  money<Unit extends number>(units: Unit[]) {
+    return new MaterialMoney(this.type, units, this.items, this.processMove, this.entries)
   }
 }
