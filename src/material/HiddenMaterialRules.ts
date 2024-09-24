@@ -217,7 +217,7 @@ export abstract class HiddenMaterialRules<P extends number = number, M extends n
     return difference(hiddenPathsBefore, hiddenPathsAfter)
   }
 
-  private moveItemWillRevealSomething(move: MoveItem<P, M, L>, player?: P): boolean {
+  private moveItemWillRevealSomething(move: MoveItem<P, M, L>, player: P): boolean {
     return this.getMoveItemRevealedPath(move, player).length > 0
   }
 
