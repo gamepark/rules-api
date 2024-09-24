@@ -19,7 +19,7 @@ export abstract class MaterialRulesPart<Player extends number = number, Material
    * @returns {Material} the material instance
    */
   material(type: MaterialType): Material<Player, MaterialType, LocationType> {
-    return new Material(type, Array.from((this.game.items[type] ?? []).entries()).filter(entry => entry[1].quantity !== 0))
+    return new Material(type, this.game.items[type])
   }
 
   /**

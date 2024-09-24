@@ -118,7 +118,7 @@ export class MaterialMutator<P extends number = number, M extends number = numbe
     if (item.location.type in this.locationsStrategies) {
       const strategy = this.locationsStrategies[item.location.type]!
       if (strategy.addItem) {
-        const material = new Material(this.type, Array.from(this.items.entries()).filter(entry => entry[1].quantity !== 0))
+        const material = new Material(this.type, this.items)
           .location(item.location.type).player(item.location.player).locationId(item.location.id).parent(item.location.parent)
         strategy.addItem(material, item)
       }
@@ -129,7 +129,7 @@ export class MaterialMutator<P extends number = number, M extends number = numbe
     if (item.location.type in this.locationsStrategies) {
       const strategy = this.locationsStrategies[item.location.type]!
       if (strategy.moveItem) {
-        const material = new Material(this.type, Array.from(this.items.entries()).filter(entry => entry[1].quantity !== 0))
+        const material = new Material(this.type, this.items)
           .location(item.location.type).player(item.location.player).locationId(item.location.id).parent(item.location.parent)
         strategy.moveItem(material, item, index)
       }
@@ -147,7 +147,7 @@ export class MaterialMutator<P extends number = number, M extends number = numbe
     if (item.location.type in this.locationsStrategies) {
       const strategy = this.locationsStrategies[item.location.type]!
       if (strategy.removeItem) {
-        const material = new Material(this.type, Array.from(this.items.entries()).filter(entry => entry[1].quantity !== 0))
+        const material = new Material(this.type, this.items)
           .location(item.location.type).player(item.location.player).locationId(item.location.id).parent(item.location.parent)
         strategy.removeItem(material, item)
       }
