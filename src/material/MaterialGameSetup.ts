@@ -82,9 +82,7 @@ export abstract class MaterialGameSetup<P extends number = number, M extends num
    * @returns a Material instance to manipulate all the material of that type in current game state.
    */
   material(type: M): Material<P, M, L> {
-    if (!this.game.items[type]) this.game.items[type] = []
-    const items = this.game.items[type]!
-    return new Material(type, Array.from(items.entries()).filter(entry => entry[1].quantity !== 0), move => this.playMove(move))
+    return new Material(type, this.game.items[type], move => this.playMove(move))
   }
 
   /**

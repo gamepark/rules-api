@@ -37,13 +37,15 @@ export class Material<P extends number = number, M extends number = number, L ex
   /**
    * Construct a new Material helper instance
    * @param {number} type Type of items this instance will work on
-   * @param {ItemEntry[]} entries The list of items to work on. Each entry consists of an array with the index of the item, and the item
+   * @param {MaterialItem[]} items The complete list of items of this type in current game state.
    * @param {function} processMove if provided, this function will be executed on every move created with this instance
+   * @param {ItemEntry[]} entries The list of items to work on. Each entry consists of an array with the index of the item, and the item
    */
   constructor(
     readonly type: M,
-    readonly entries: ItemEntry<P, L>[],
-    protected readonly processMove?: (move: ItemMove<P, M, L>) => void) {
+    protected items: MaterialItem<P, L>[] = [],
+    protected readonly processMove?: (move: ItemMove<P, M, L>) => void,
+    public entries: ItemEntry<P, L>[] = Array.from(items.entries()).filter(entry => entry[1].quantity !== 0)) {
   }
 
   /**
@@ -53,8 +55,8 @@ export class Material<P extends number = number, M extends number = number, L ex
    * @protected
    */
   protected new(entries: ItemEntry<P, L>[]): this {
-    const Class = this.constructor as new (type: M, entries: ItemEntry<P, L>[], processMove?: (move: ItemMove<P, M, L>) => void) => this
-    return new Class(this.type, entries, this.processMove)
+    const Class = this.constructor as new (type: M, items: MaterialItem<P, L>[], processMove?: (move: ItemMove<P, M, L>) => void, entries?: ItemEntry<P, L>[]) => this
+    return new Class(this.type, this.items, this.processMove, entries)
   }
 
   /**
@@ -607,6 +609,6 @@ export class Material<P extends number = number, M extends number = number, L ex
    * @param selector The sort to apply on the deck. See {@link sort}. Defaults to -item.location.x
    */
   deck(selector: (item: MaterialItem<P, L>) => number = item => -item.location.x!) {
-    return new MaterialDeck(this.type, this.entries, this.processMove).sort(selector)
+    return new MaterialDeck(this.type, this.items, this.processMove, this.entries).sort(selector)
   }
 }

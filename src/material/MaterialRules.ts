@@ -69,7 +69,7 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
    * @returns a Material instance to manipulate all the material of that type in current game state.
    */
   material(type: MaterialType): Material<Player, MaterialType, LocationType> {
-    return new Material(type, Array.from((this.game.items[type] ?? []).entries()).filter(entry => entry[1].quantity !== 0))
+    return new Material(type, this.game.items[type])
   }
 
   /**
@@ -127,7 +127,8 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
    * @returns a MaterialMutator to change the state of the items
    */
   mutator(type: MaterialType): MaterialMutator<Player, MaterialType, LocationType> {
-    return new MaterialMutator(type, this.game.items[type] ?? [], this.locationsStrategies[type], this.itemsCanMerge(type))
+    if (!this.game.items[type]) this.game.items[type] = []
+    return new MaterialMutator(type, this.game.items[type]!, this.locationsStrategies[type], this.itemsCanMerge(type))
   }
 
   /**
