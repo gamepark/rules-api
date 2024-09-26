@@ -41,8 +41,7 @@ import { isSimultaneousRule, MaterialRulesPart, MaterialRulesPartCreator } from 
  */
 export abstract class MaterialRules<Player extends number = number, MaterialType extends number = number, LocationType extends number = number>
   extends Rules<MaterialGame<Player, MaterialType, LocationType>, MaterialMove<Player, MaterialType, LocationType>, Player>
-  implements RandomMove<MaterialMove<Player, MaterialType, LocationType>,
-    MaterialMoveRandomized<Player, MaterialType, LocationType>>,
+  implements RandomMove<MaterialMove<Player, MaterialType, LocationType>, MaterialMoveRandomized<Player, MaterialType, LocationType>, Player>,
     Undo<MaterialMove<Player, MaterialType, LocationType>, Player>,
     UnpredictableMoves<MaterialMove<Player, MaterialType, LocationType>> {
 
@@ -289,7 +288,7 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
   }
 
   private consecutiveActionBlocksUndo(action: Action<MaterialMove<Player, MaterialType, LocationType>, Player>,
-                              consecutiveAction: Action<MaterialMove<Player, MaterialType, LocationType>, Player>): boolean {
+                                      consecutiveAction: Action<MaterialMove<Player, MaterialType, LocationType>, Player>): boolean {
     if (this.actionActivatesPlayer(consecutiveAction)) {
       return true
     }

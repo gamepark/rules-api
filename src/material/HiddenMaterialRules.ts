@@ -49,9 +49,9 @@ export abstract class HiddenMaterialRules<P extends number = number, M extends n
    */
   abstract readonly hidingStrategies: Partial<Record<M, Partial<Record<L, HidingStrategy<P, L>>>>>
 
-  randomize(move: MaterialMove<P, M, L>): MaterialMove<P, M, L> & MaterialMoveRandomized<P, M, L> {
-    if (this.isRevealingItemMove(move)) {
-      // We need to know if a MoveItem has revealed something to prevent the undo in that case.
+  randomize(move: MaterialMove<P, M, L>, player?: P): MaterialMove<P, M, L> & MaterialMoveRandomized<P, M, L> {
+    if (player !== undefined && this.isRevealingItemMove(move, player)) {
+      // We need to know if a MoveItem has revealed something to the player to prevent the undo in that case.
       // To know that, we need the position of the item before the move.
       // To prevent having to recalculate the game state before the move, we flag the move in the database with "reveal: {}".
       // This flag indicate that something was revealed to someone.
@@ -61,9 +61,9 @@ export abstract class HiddenMaterialRules<P extends number = number, M extends n
     return super.randomize(move)
   }
 
-  private isRevealingItemMove(move: MaterialMove<P, M, L>): move is MoveItem<P, M, L> | MoveItemsAtOnce<P, M, L> {
-    return (isMoveItem(move) && this.game.players.some(player => this.moveItemWillRevealSomething(move, player))) ||
-      (isMoveItemsAtOnce(move) && this.game.players.some(player => this.moveAtOnceWillRevealSomething(move, player)))
+  private isRevealingItemMove(move: MaterialMove<P, M, L>, player: P): move is MoveItem<P, M, L> | MoveItemsAtOnce<P, M, L> {
+    return (isMoveItem(move) && this.moveItemWillRevealSomething(move, player))
+      || (isMoveItemsAtOnce(move) && this.moveAtOnceWillRevealSomething(move, player))
   }
 
   /**
@@ -176,7 +176,6 @@ export abstract class HiddenMaterialRules<P extends number = number, M extends n
   }
 
   private getMoveItemView(move: MoveItem<P, M, L>, player?: P): MoveItem<P, M, L> {
-    if (!move.reveal) return move
     const revealedPaths = this.getMoveItemRevealedPath(move, player)
     if (!revealedPaths.length) return move
     const item = this.material(move.itemType).getItem(move.itemIndex)
@@ -188,13 +187,13 @@ export abstract class HiddenMaterialRules<P extends number = number, M extends n
   }
 
   private getMoveAtOnceView(move: MoveItemsAtOnce<P, M, L>, player?: P): MoveItemsAtOnce<P, M, L> {
-    if (!move.reveal) return move
-    const moveView: MoveItemsAtOnce<P, M, L> = { ...move, reveal: {} }
+    const moveView: MoveItemsAtOnce<P, M, L> = { ...move }
     for (const index of move.indexes) {
       const revealedPaths = this.getMoveAtOnceRevealedPath(move, index, player)
       if (!revealedPaths.length) continue
-      const item = this.material(move.itemType).getItem(index)
+      if (!moveView.reveal) moveView.reveal = {}
       moveView.reveal![index] = {}
+      const item = this.material(move.itemType).getItem(index)
       for (const path of revealedPaths) {
         set(moveView.reveal![index], path, get(item, path))
       }

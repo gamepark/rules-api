@@ -7,13 +7,14 @@ import { Rules } from './Rules'
  * Therefore, the move must be played and validated without the random output, then the random output must be processed and added to the move.
  * This interface must be implemented in order to add the random output to the moves that requires it.
  */
-export interface RandomMove<Move = any, RandomizedMove = any> {
+export interface RandomMove<Move = any, RandomizedMove = any, PlayerId = any> {
   /**
    * Add the random output to a move when necessary
    * @param move A move just played that might need to be randomized
+   * @param playerId Id of the player that played the action
    * @returns the move with the random output (or unchanged move if it is not a random move)
    */
-  randomize(move: Move): Move & RandomizedMove
+  randomize(move: Move, playerId?: PlayerId): Move & RandomizedMove
 
   /**
    * The signature of {@link Rules.play} changes a little bit: the moves are always randomized before they are played

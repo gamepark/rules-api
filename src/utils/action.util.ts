@@ -5,7 +5,7 @@ import { hasRandomMove } from './random.util'
 
 export function playAction<Game, Move, PlayerId>(rules: Rules<Game, Move, PlayerId>, move: Move, playerId: PlayerId): Action<Move, PlayerId> {
   if (hasRandomMove(rules)) {
-    move = rules.randomize(move)
+    move = rules.randomize(move, playerId)
   }
 
   const action: Action<Move, PlayerId> = { playerId, move, consequences: [] }
