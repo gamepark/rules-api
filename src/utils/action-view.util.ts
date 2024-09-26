@@ -20,7 +20,7 @@ export function playActionWithViews<Game, View, Move, MoveView, PlayerId>(
 ): ActionWithViews<Move, MoveView, PlayerId> {
 
   if (hasRandomMove(rules)) {
-    move = rules.randomize(move)
+    move = rules.randomize(move, playerId)
   }
 
   const actionWithView: ActionWithViews<Move, MoveView, PlayerId> = {
