@@ -3,6 +3,7 @@ import shuffle from 'lodash/shuffle'
 import { Action } from '../Action'
 import { RandomMove } from '../RandomMove'
 import { PlayMoveContext, Rules } from '../Rules'
+import { hasTimeLimit, TimeLimit } from '../TimeLimit'
 import { Undo } from '../Undo'
 import { UnpredictableMoves } from '../UnpredictableMove'
 import { Material, MaterialMutator } from './items'
@@ -43,7 +44,8 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
   extends Rules<MaterialGame<Player, MaterialType, LocationType>, MaterialMove<Player, MaterialType, LocationType>, Player>
   implements RandomMove<MaterialMove<Player, MaterialType, LocationType>, MaterialMoveRandomized<Player, MaterialType, LocationType>, Player>,
     Undo<MaterialMove<Player, MaterialType, LocationType>, Player>,
-    UnpredictableMoves<MaterialMove<Player, MaterialType, LocationType>> {
+    UnpredictableMoves<MaterialMove<Player, MaterialType, LocationType>>,
+    TimeLimit<MaterialGame<Player, MaterialType, LocationType>, MaterialMove<Player, MaterialType, LocationType>, Player> {
 
   /**
    * When you implement a game using the "material" approach, you are also strongly advised to split the rules of the game into many small parts.
@@ -354,6 +356,16 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
    */
   isOver(): boolean {
     return !this.game.rule
+  }
+
+  /**
+   * Amount of time given to a player everytime it is their turn to play.
+   * @param playerId Id of the player, if you want to give different time depending on the id for asymmetric games.
+   * @return number of seconds to add to the player's clock
+   */
+  giveTime(playerId: Player): number {
+    const rule = this.rulesStep
+    return rule && hasTimeLimit(rule) ? rule.giveTime(playerId) : 60
   }
 }
 
