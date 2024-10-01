@@ -14,3 +14,13 @@ export type XYCoordinates = {
 export const isXYCoordinates = (coordinates: any): coordinates is XYCoordinates => {
   return typeof coordinates === 'object' && typeof coordinates.x === 'number' && typeof coordinates.y === 'number'
 }
+
+/**
+ * Boundaries for a two dimension grid
+ */
+export type GridBoundaries = {
+  xMin: number
+  xMax: number
+  yMin: number
+  yMax: number
+}
