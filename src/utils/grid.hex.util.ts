@@ -110,3 +110,17 @@ export function hexRotate(vector: XYCoordinates, rotation: number = 0): XYCoordi
       return vector
   }
 }
+
+/**
+ * Get the distance between 2 hexagons, i.e. the minimum number of hexagons to cross to got from hex1 to hex2.
+ * @param hex1 First hexagon coordinates
+ * @param hex2 Second hexagon coordinates
+ * @param system The coordinates system used
+ * @return the distance between the hexagons
+ */
+export function getDistanceBetweenHex(hex1: XYCoordinates, hex2: XYCoordinates, system = HexagonalGridCoordinatesSystem.Axial) {
+  if (system !== HexagonalGridCoordinatesSystem.Axial) {
+    return getDistanceBetweenHex(hexToAxial(hex1, system), hexToAxial(hex2, system))
+  }
+  return (Math.abs(hex1.x - hex2.x) + Math.abs(hex1.x - hex2.x + hex1.y - hex2.y) + Math.abs(hex1.y - hex2.y)) / 2
+}
