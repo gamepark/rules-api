@@ -31,7 +31,7 @@ export class MaterialDeck<P extends number = number, M extends number = number, 
    * @param quantity The number of items to move
    * @returns {MoveItem[]} the move that will change the location of the item (or a part of its quantity) when executed
    */
-  deal(arg: ((item: MaterialItem<P, L>) => Location<P, L>) | Location<P, L>, quantity: number = 1): MoveItem<P, M, L>[] {
+  deal(arg: Location<P, L> | ((item: MaterialItem<P, L>) => Location<P, L>), quantity: number = 1): MoveItem<P, M, L>[] {
     return this.new(this.entries.splice(0, quantity)).moveItems(arg)
   }
 
@@ -41,7 +41,7 @@ export class MaterialDeck<P extends number = number, M extends number = number, 
    * @param {Location | function} arg The new location of the item. It can be a function to process the location based on the item current state.
    * @returns {MoveItem} the move that will change the location of the item (or a part of its quantity) when executed
    */
-  dealOne(arg: ((item: MaterialItem<P, L>) => Location<P, L>) | Location<P, L>): MoveItem<P, M, L> {
+  dealOne(arg: Location<P, L> | ((item: MaterialItem<P, L>) => Location<P, L>)): MoveItem<P, M, L> {
     const deal = this.deal(arg)
     if (deal.length === 0) {
       throw new Error('You are trying to deal one card from an empty deck')
