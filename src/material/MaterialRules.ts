@@ -12,6 +12,7 @@ import { MaterialGame } from './MaterialGame'
 import { GameMemory, PlayerMemory } from './memory'
 import {
   isDeleteItem,
+  isEndGame,
   isMoveItem,
   isRoll,
   isSelectItem,
@@ -248,6 +249,10 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
         }
     }
 
+    const endGameIndex = consequences.findIndex(isEndGame)
+    if (endGameIndex !== -1) {
+      return consequences.slice(0, endGameIndex + 1)
+    }
     return consequences
   }
 
