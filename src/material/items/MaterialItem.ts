@@ -13,8 +13,9 @@ import { Location } from '../location'
  * @property {number | boolean | undefined} selected Flag the item if selected. Items with a quantity can be partially selected using a number of select items.
  */
 export type MaterialItem<P extends number = number, L extends number = number, Id = any> = {
-  id?: Id
   quantity?: number
   location: Location<P, L>
   selected?: number | boolean
-}
+} & IfAny<Id, { id?: any }, { id: Id }>
+
+type IfAny<T, Y, N> = 0 extends (1 & T) ? Y : N

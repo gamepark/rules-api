@@ -68,7 +68,7 @@ export class Material<P extends number = number, M extends number = number, L ex
    * @returns {MaterialItem[]} the items in this Material instance
    */
   getItems<Id = any>(predicate?: (item: MaterialItem<P, L, Id>) => boolean): MaterialItem<P, L, Id>[] {
-    const items = this.entries.map(entry => entry[1])
+    const items = this.entries.map(entry => entry[1]) as MaterialItem<P, L, Id>[]
     return predicate ? items.filter(predicate) : items
   }
 
@@ -100,12 +100,12 @@ export class Material<P extends number = number, M extends number = number, L ex
     if (typeof arg === 'number') {
       const entry = this.entries.find(entry => entry[0] === arg)
       if (!entry) throw new Error(`Could not find any item with index ${arg}`)
-      return entry[1]
+      return entry[1] as MaterialItem<P, L, Id>
     } else if (typeof arg === 'function') {
-      const entries = this.entries.filter(([, item]) => arg(item))
-      return entries.length ? entries[0][1] : undefined
+      const entries = this.entries.filter(([, item]) => arg(item as MaterialItem<P, L, Id>))
+      return entries.length ? entries[0][1] as MaterialItem<P, L, Id> : undefined
     } else {
-      return this.entries.length ? this.entries[0][1] : undefined
+      return this.entries.length ? this.entries[0][1] as MaterialItem<P, L, Id> : undefined
     }
   }
 
