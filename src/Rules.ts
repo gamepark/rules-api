@@ -203,4 +203,9 @@ export type PlayMoveContext = {
    * true if move is only played locally on a player's client
    */
   local?: boolean
+
+  /**
+   * True if the move will not be kept in the game's history
+   */
+  transient?: boolean
 }

@@ -62,7 +62,7 @@ export namespace MaterialMoveBuilder {
    * Creates a {@link DisplayHelp} object
    */
   export const displayHelp = <P extends number = number, M extends number = number, L extends number = number>
-  (helpDisplay: HelpDisplay<P, M, L>): DisplayHelp<P, M, L> =>
+  (helpDisplay?: HelpDisplay<P, M, L>): DisplayHelp<P, M, L> =>
     ({ kind: MoveKind.LocalMove, type: LocalMoveType.DisplayHelp, helpDisplay })
 
   /**

@@ -1,5 +1,7 @@
+import difference from 'lodash/difference'
 import random from 'lodash/random'
 import shuffle from 'lodash/shuffle'
+import union from 'lodash/union'
 import { Action } from '../Action'
 import { RandomMove } from '../RandomMove'
 import { PlayMoveContext, Rules } from '../Rules'
@@ -19,6 +21,8 @@ import {
   isShuffle,
   isStartPlayerTurn,
   isStartSimultaneousRule,
+  ItemMove,
+  ItemMoveType,
   LocalMoveType,
   MaterialMove,
   MaterialMoveRandomized,
@@ -44,7 +48,7 @@ import { isSimultaneousRule, MaterialRulesPart, MaterialRulesPartCreator } from 
 export abstract class MaterialRules<Player extends number = number, MaterialType extends number = number, LocationType extends number = number>
   extends Rules<MaterialGame<Player, MaterialType, LocationType>, MaterialMove<Player, MaterialType, LocationType>, Player>
   implements RandomMove<MaterialMove<Player, MaterialType, LocationType>, MaterialMoveRandomized<Player, MaterialType, LocationType>, Player>,
-    Undo<MaterialMove<Player, MaterialType, LocationType>, Player>,
+    Undo<MaterialGame<Player, MaterialType, LocationType>, MaterialMove<Player, MaterialType, LocationType>, Player>,
     UnpredictableMoves<MaterialMove<Player, MaterialType, LocationType>>,
     TimeLimit<MaterialGame<Player, MaterialType, LocationType>, MaterialMove<Player, MaterialType, LocationType>, Player> {
 
@@ -195,7 +199,7 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
     const rulesStep = this.rulesStep
     switch (move.kind) {
       case MoveKind.ItemMove:
-        if (rulesStep) {
+        if (rulesStep && !context?.transient) {
           consequences.push(...rulesStep.beforeItemMove(move, context))
         }
         if (!this.game.items[move.itemType]) this.game.items[move.itemType] = []
@@ -205,7 +209,14 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
           && this.game.droppedItem.type === move.itemType && move.itemIndex === this.game.droppedItem.index) {
           delete this.game.droppedItem
         }
-        if (rulesStep) {
+        const indexes = getItemMoveIndexes(move)
+        if (context?.transient) {
+          if (!this.game.transientItems) this.game.transientItems = {}
+          this.game.transientItems[move.itemType] = union(this.game.transientItems[move.itemType], indexes)
+        } else if (this.game.transientItems) {
+          this.game.transientItems[move.itemType] = difference(this.game.transientItems[move.itemType], indexes)
+        }
+        if (rulesStep && !context?.transient) {
           consequences.push(...rulesStep.afterItemMove(move, context))
         }
         break
@@ -342,6 +353,17 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
   }
 
   /**
+   * Restore help display & local item moves
+   */
+  restoreTransientState(previousState: MaterialGame<Player, MaterialType, LocationType>) {
+    this.game.helpDisplay = previousState.helpDisplay
+    this.game.transientItems = previousState.transientItems
+    for (const type in previousState.transientItems) {
+      previousState.transientItems[type]!.forEach(index => this.game.items[type]![index] = previousState.items[type]![index])
+    }
+  }
+
+  /**
    * Random moves, or moves that reveals something to me, are unpredictable.
    * Unpredictable moves cannot be precomputed on client side, the server side's response is necessary.
    * See {@link Rules.isUnpredictableMove}
@@ -381,4 +403,20 @@ export interface MaterialRulesCreator<P extends number = number, M extends numbe
   new(state: MaterialGame<P, M, L>, client?: {
     player?: P
   }): MaterialRules<P, M, L>
+}
+
+function getItemMoveIndexes(move: ItemMove): number[] {
+  switch (move.type) {
+    case ItemMoveType.Move:
+    case ItemMoveType.Delete:
+    case ItemMoveType.Roll:
+    case ItemMoveType.Select:
+      return [move.itemIndex]
+    case ItemMoveType.MoveAtOnce:
+    case ItemMoveType.DeleteAtOnce:
+    case ItemMoveType.Shuffle:
+      return move.indexes
+    default:
+      return []
+  }
 }
