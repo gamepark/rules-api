@@ -51,5 +51,5 @@ export type RulesHelpDisplay<RuleId extends number = number> = {
 export type DisplayHelp<P extends number = number, M extends number = number, L extends number = number> = {
   kind: MoveKind.LocalMove
   type: typeof LocalMoveType.DisplayHelp
-  helpDisplay: HelpDisplay<P, M, L>
+  helpDisplay?: HelpDisplay<P, M, L>
 }

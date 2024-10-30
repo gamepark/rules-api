@@ -25,4 +25,5 @@ export type MaterialGame<Player extends number = number,
   helpDisplay?: HelpDisplay<Player, MaterialType, LocationType>
   droppedItem?: DisplayedItem<MaterialType>
   tutorial?: TutorialState
+  transientItems?: Partial<Record<MaterialType, number[]>>
 }
