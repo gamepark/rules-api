@@ -3,7 +3,7 @@ import maxBy from 'lodash/maxBy'
 import minBy from 'lodash/minBy'
 import orderBy from 'lodash/orderBy'
 import sumBy from 'lodash/sumBy'
-import { Location } from '../location'
+import { isSameLocationArea, Location } from '../location'
 import {
   CreateItem,
   CreateItemsAtOnce,
@@ -558,6 +558,9 @@ export class Material<P extends number = number, M extends number = number, L ex
    * @returns {Shuffle} the move that shuffle the items when executed
    */
   shuffle(): Shuffle<M> {
+    if (process.env.NODE_ENV === 'development' && this.entries.some(e => !isSameLocationArea(e[1].location, this.entries[0][1].location))) {
+      console.warn('Calling shuffle on items with different location areas might be a mistake.')
+    }
     return this.process([{
       kind: MoveKind.ItemMove,
       type: ItemMoveType.Shuffle,
