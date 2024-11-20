@@ -24,7 +24,12 @@ export abstract class SimultaneousRule<Player extends number = number, MaterialT
     return this.isTurnToPlay(player) ? this.getActivePlayerLegalMoves(player) : []
   }
 
-  abstract getActivePlayerLegalMoves(playerId: Player): MaterialMove<Player, MaterialType, LocationType>[]
+  /**
+   * This function is only called for players which are still active. It must return the legal move of given player.
+   * @param player Player to consider
+   * @return the legal moves of the player
+   */
+  abstract getActivePlayerLegalMoves(player: Player): MaterialMove<Player, MaterialType, LocationType>[]
 
   /**
    * This function is called immediately after a {@link EndPlayerTurn} has been played.
