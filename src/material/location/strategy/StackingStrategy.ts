@@ -6,7 +6,7 @@ import { PositiveSequenceStrategy } from './PositiveSequenceStrategy'
  * This strategy will only work on items with the same location.x and location.y, to maintain a positive sequence on location.z,
  * for example to easily stack scoring pawns when they are on the same spot.
  */
-export class StakingStrategy implements LocationStrategy {
+export class StackingStrategy implements LocationStrategy {
   private delegate = new PositiveSequenceStrategy('z')
 
   addItem(material: Material, item: MaterialItem) {
