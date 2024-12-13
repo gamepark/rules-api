@@ -160,6 +160,9 @@ export class MaterialMutator<P extends number = number, M extends number = numbe
       const mergeItem = this.items[mergeIndex]
       mergeItem.quantity = (mergeItem.quantity ?? 1) + (move.item.quantity ?? 1)
     } else {
+      if (move.item.quantity && !this.canMerge) {
+        console.error('Do not use quantity on items that cannot merge. Items that can be hidden cannot merge.')
+      }
       this.addItem(JSON.parse(JSON.stringify(move.item)))
     }
   }
