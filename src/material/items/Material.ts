@@ -426,7 +426,7 @@ export class Material<P extends number = number, M extends number = number, L ex
   /**
    * Prepare one move that will change the location of all the items in this material instance
    *
-   * @param {Location | function} location The new location of the items. It can be a function to process the location based on each item current state.
+   * @param {Location} location The new location of the items. It can only be the same location for every item.
    * @returns {MoveItemsAtOnce} the move that will change the location of the items when executed
    */
   moveItemsAtOnce(location: Partial<Location<P, L>>): MoveItemsAtOnce<P, M, L> {
