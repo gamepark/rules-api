@@ -21,8 +21,8 @@ import {
   isShuffle,
   isStartPlayerTurn,
   isStartSimultaneousRule,
-  ItemMove,
-  ItemMoveType,
+  ItemMove, ItemMoveRandomized,
+  ItemMoveType, ItemMoveView,
   LocalMoveType,
   MaterialMove,
   MaterialMoveRandomized,
@@ -199,43 +199,10 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
     const rulesStep = this.rulesStep
     switch (move.kind) {
       case MoveKind.ItemMove:
-        if (rulesStep && !context?.transient) {
-          consequences.push(...rulesStep.beforeItemMove(move, context))
-        }
-        if (!this.game.items[move.itemType]) this.game.items[move.itemType] = []
-        const mutator = this.mutator(move.itemType)
-        mutator.applyMove(move)
-        if (this.game.droppedItem && (isMoveItem(move) || isDeleteItem(move))
-          && this.game.droppedItem.type === move.itemType && move.itemIndex === this.game.droppedItem.index) {
-          delete this.game.droppedItem
-        }
-        const indexes = getItemMoveIndexes(move)
-        if (context?.transient) {
-          if (!this.game.transientItems) this.game.transientItems = {}
-          this.game.transientItems[move.itemType] = union(this.game.transientItems[move.itemType], indexes)
-        } else if (this.game.transientItems) {
-          this.game.transientItems[move.itemType] = difference(this.game.transientItems[move.itemType], indexes)
-        }
-        if (rulesStep && !context?.transient) {
-          consequences.push(...rulesStep.afterItemMove(move, context))
-        }
+        consequences.push(...this.onPlayItemMove(move, context))
         break
       case MoveKind.RulesMove:
-        if (move.type === RuleMoveType.EndPlayerTurn) {
-          if (this.game.rule?.players?.includes(move.player)) {
-            this.game.rule.players = this.game.rule.players.filter(player => player !== move.player)
-            if (isSimultaneousRule(rulesStep)) {
-              consequences.push(...rulesStep.onPlayerTurnEnd(move, context))
-              if (this.game.rule.players.length === 0) {
-                consequences.push(...rulesStep.getMovesAfterPlayersDone())
-              }
-            }
-          } else {
-            console.warn('EndPlayerTurn was triggered for a player which is already inactive')
-          }
-        } else {
-          consequences.push(...this.changeRule(move, context))
-        }
+        consequences.push(...this.onPlayRulesMove(move, context))
         break
       case MoveKind.CustomMove:
         if (rulesStep) {
@@ -263,6 +230,54 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
     const endGameIndex = consequences.findIndex(isEndGame)
     if (endGameIndex !== -1) {
       return consequences.slice(0, endGameIndex + 1)
+    }
+    return consequences
+  }
+
+  protected onPlayItemMove(move: ItemMoveRandomized<Player, MaterialType, LocationType> | ItemMoveView<Player, MaterialType, LocationType>,
+                           context?: PlayMoveContext): MaterialMove<Player, MaterialType, LocationType>[] {
+    const consequences: MaterialMove<Player, MaterialType, LocationType>[] = []
+    const rulesStep = this.rulesStep
+    if (rulesStep && !context?.transient) {
+      consequences.push(...rulesStep.beforeItemMove(move, context))
+    }
+    if (!this.game.items[move.itemType]) this.game.items[move.itemType] = []
+    const mutator = this.mutator(move.itemType)
+    mutator.applyMove(move)
+    if (this.game.droppedItem && (isMoveItem(move) || isDeleteItem(move))
+      && this.game.droppedItem.type === move.itemType && move.itemIndex === this.game.droppedItem.index) {
+      delete this.game.droppedItem
+    }
+    const indexes = getItemMoveIndexes(move)
+    if (context?.transient) {
+      if (!this.game.transientItems) this.game.transientItems = {}
+      this.game.transientItems[move.itemType] = union(this.game.transientItems[move.itemType], indexes)
+    } else if (this.game.transientItems) {
+      this.game.transientItems[move.itemType] = difference(this.game.transientItems[move.itemType], indexes)
+    }
+    if (rulesStep && !context?.transient) {
+      consequences.push(...rulesStep.afterItemMove(move, context))
+    }
+    return consequences
+  }
+
+  private onPlayRulesMove(move: RuleMove<Player>, context?: PlayMoveContext): MaterialMove<Player, MaterialType, LocationType>[] {
+    const consequences: MaterialMove<Player, MaterialType, LocationType>[] = []
+    const rulesStep = this.rulesStep
+    if (move.type === RuleMoveType.EndPlayerTurn) {
+      if (this.game.rule?.players?.includes(move.player)) {
+        this.game.rule.players = this.game.rule.players.filter(player => player !== move.player)
+        if (isSimultaneousRule(rulesStep)) {
+          consequences.push(...rulesStep.onPlayerTurnEnd(move, context))
+          if (this.game.rule.players.length === 0) {
+            consequences.push(...rulesStep.getMovesAfterPlayersDone())
+          }
+        }
+      } else {
+        console.warn('EndPlayerTurn was triggered for a player which is already inactive')
+      }
+    } else {
+      consequences.push(...this.changeRule(move, context))
     }
     return consequences
   }
