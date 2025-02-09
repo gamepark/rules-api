@@ -196,6 +196,7 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
   ): MaterialMove<Player, MaterialType, LocationType>[] {
 
     const consequences: MaterialMove<Player, MaterialType, LocationType>[] = []
+    if (!this.game.rule) return []
     const rulesStep = this.rulesStep
     switch (move.kind) {
       case MoveKind.ItemMove:
