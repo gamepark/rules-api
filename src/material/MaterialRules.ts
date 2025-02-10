@@ -13,6 +13,7 @@ import { LocationStrategy } from './location'
 import { MaterialGame } from './MaterialGame'
 import { GameMemory, PlayerMemory } from './memory'
 import {
+  CustomMove,
   isDeleteItem,
   isEndGame,
   isMoveItem,
@@ -205,6 +206,7 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
         consequences.push(...this.onPlayRulesMove(move, context))
         break
       case MoveKind.CustomMove:
+        consequences.push(...this.onCustomMove(move, context))
         if (rulesStep) {
           consequences.push(...rulesStep.onCustomMove(move, context))
         }
@@ -238,6 +240,7 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
                            context?: PlayMoveContext): MaterialMove<Player, MaterialType, LocationType>[] {
     const consequences: MaterialMove<Player, MaterialType, LocationType>[] = []
     const rulesStep = this.rulesStep
+    consequences.push(...this.beforeItemMove(move, context))
     if (rulesStep && !context?.transient) {
       consequences.push(...rulesStep.beforeItemMove(move, context))
     }
@@ -255,10 +258,23 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
     } else if (this.game.transientItems) {
       this.game.transientItems[move.itemType] = difference(this.game.transientItems[move.itemType], indexes)
     }
+    consequences.push(...this.afterItemMove(move, context))
     if (rulesStep && !context?.transient) {
       consequences.push(...rulesStep.afterItemMove(move, context))
     }
     return consequences
+  }
+
+  protected beforeItemMove(_move: ItemMove<Player, MaterialType, LocationType>, _context?: PlayMoveContext): MaterialMove<Player, MaterialType, LocationType>[] {
+    return []
+  }
+
+  protected afterItemMove(_move: ItemMove<Player, MaterialType, LocationType>, _context?: PlayMoveContext): MaterialMove<Player, MaterialType, LocationType>[] {
+    return []
+  }
+
+  protected onCustomMove(_move: CustomMove, _context?: PlayMoveContext): MaterialMove<Player, MaterialType, LocationType>[] {
+    return []
   }
 
   private onPlayRulesMove(move: RuleMove<Player>, context?: PlayMoveContext): MaterialMove<Player, MaterialType, LocationType>[] {
