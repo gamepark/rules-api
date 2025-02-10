@@ -99,7 +99,7 @@ export class Material<P extends number = number, M extends number = number, L ex
   getItem<Id = any>(arg?: number | ((item: MaterialItem<P, L, Id>) => boolean)): MaterialItem<P, L, Id> | undefined {
     if (typeof arg === 'number') {
       const entry = this.entries.find(entry => entry[0] === arg)
-      if (!entry) throw new Error(`Could not find any item with index ${arg}`)
+      if (!entry) throw new Error(`Could not find any item with index ${arg} for type ${this.type}`)
       return entry[1] as MaterialItem<P, L, Id>
     } else if (typeof arg === 'function') {
       const entries = this.entries.filter(([, item]) => arg(item as MaterialItem<P, L, Id>))
