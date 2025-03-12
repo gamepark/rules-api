@@ -33,11 +33,11 @@ import { HidingSecretsStrategy } from './SecretMaterialRules'
  * If the game has secret information (some players have information not available to others, link cards in their hand), then you
  * must implement {@link SecretMaterialRules} instead.
  */
-export abstract class HiddenMaterialRules<P extends number = number, M extends number = number, L extends number = number>
-  extends MaterialRules<P, M, L>
-  implements HiddenInformation<MaterialGame<P, M, L>, MaterialMove<P, M, L>, MaterialMove<P, M, L>> {
+export abstract class HiddenMaterialRules<P extends number = number, M extends number = number, L extends number = number, R extends number = number>
+  extends MaterialRules<P, M, L, R>
+  implements HiddenInformation<MaterialGame<P, M, L, R>, MaterialMove<P, M, L, R>, MaterialMove<P, M, L, R>> {
 
-  constructor(game: MaterialGame<P, M, L>, private readonly client?: { player?: P }) {
+  constructor(game: MaterialGame<P, M, L, R>, private readonly client?: { player?: P }) {
     super(game)
   }
 
@@ -49,7 +49,7 @@ export abstract class HiddenMaterialRules<P extends number = number, M extends n
    */
   abstract readonly hidingStrategies: Partial<Record<M, Partial<Record<L, HidingStrategy<P, L>>>>>
 
-  randomize(move: MaterialMove<P, M, L>, player?: P): MaterialMove<P, M, L> & MaterialMoveRandomized<P, M, L> {
+  randomize(move: MaterialMove<P, M, L, R>, player?: P): MaterialMove<P, M, L> & MaterialMoveRandomized<P, M, L, R> {
     if (player !== undefined && this.isRevealingItemMove(move, player)) {
       // We need to know if a MoveItem has revealed something to the player to prevent the undo in that case.
       // To know that, we need the position of the item before the move.
@@ -61,7 +61,7 @@ export abstract class HiddenMaterialRules<P extends number = number, M extends n
     return super.randomize(move)
   }
 
-  private isRevealingItemMove(move: MaterialMove<P, M, L>, player: P): move is MoveItem<P, M, L> | MoveItemsAtOnce<P, M, L> {
+  private isRevealingItemMove(move: MaterialMove<P, M, L, R>, player: P): move is MoveItem<P, M, L> | MoveItemsAtOnce<P, M, L> {
     return (isMoveItem(move) && this.moveItemWillRevealSomething(move, player))
       || (isMoveItemsAtOnce(move) && this.moveAtOnceWillRevealSomething(move, player))
   }
@@ -76,7 +76,7 @@ export abstract class HiddenMaterialRules<P extends number = number, M extends n
   /**
    * Moves that reveal some information (like drawing a card) cannot be predicted by the player.
    */
-  isUnpredictableMove(move: MaterialMove<P, M, L>, player: P): boolean {
+  isUnpredictableMove(move: MaterialMove<P, M, L, R>, player: P): boolean {
     if (isMoveItem(move)) {
       return this.moveItemWillRevealSomething(move, player)
     } else if (isMoveItemsAtOnce(move)) {
@@ -95,7 +95,7 @@ export abstract class HiddenMaterialRules<P extends number = number, M extends n
   /**
    * Moves than reveals an information to someone cannot be undone by default
    */
-  protected moveBlocksUndo(move: MaterialMove<P, M, L>): boolean {
+  protected moveBlocksUndo(move: MaterialMove<P, M, L, R>): boolean {
     return super.moveBlocksUndo(move) || this.moveRevealedSomething(move)
   }
 
@@ -103,14 +103,14 @@ export abstract class HiddenMaterialRules<P extends number = number, M extends n
    * @param move A move to test
    * @returns true if the move revealed something to some player
    */
-  protected moveRevealedSomething(move: MaterialMove<P, M, L>): boolean {
+  protected moveRevealedSomething(move: MaterialMove<P, M, L, R>): boolean {
     return (isMoveItem(move) || isMoveItemsAtOnce(move)) && !!move.reveal
   }
 
   /**
    * With the material approach, we can offer a default working implementation for {@link HiddenInformation.getView}
    */
-  getView(player?: P): MaterialGame<P, M, L> {
+  getView(player?: P): MaterialGame<P, M, L, R> {
     return {
       ...this.game,
       items: mapValues(this.game.items, (items, stringType) => {
@@ -146,7 +146,7 @@ export abstract class HiddenMaterialRules<P extends number = number, M extends n
    * To be able to know if a MoveItem cannot be undone, the server flags the moves with a "reveal" property.
    * This difference must be integrated without error during the callback.
    */
-  canIgnoreServerDifference(clientMove: MaterialMove<P, M, L>, serverMove: MaterialMove<P, M, L>): boolean {
+  canIgnoreServerDifference(clientMove: MaterialMove<P, M, L, R>, serverMove: MaterialMove<P, M, L, R>): boolean {
     if (isMoveItem(clientMove) && isMoveItem(serverMove)) {
       const { reveal, ...serverMoveWithoutReveal } = serverMove
       return isEqual(clientMove, serverMoveWithoutReveal)
@@ -157,7 +157,7 @@ export abstract class HiddenMaterialRules<P extends number = number, M extends n
   /**
    * With the material approach, we can offer a default working implementation for {@link HiddenInformation.getMoveView}
    */
-  getMoveView(move: MaterialMoveRandomized<P, M, L>, player?: P): MaterialMove<P, M, L> {
+  getMoveView(move: MaterialMoveRandomized<P, M, L, R>, player?: P): MaterialMove<P, M, L, R> {
     if (move.kind === MoveKind.ItemMove && move.itemType in this.hidingStrategies) {
       switch (move.type) {
         case ItemMoveType.Move:
@@ -250,7 +250,7 @@ export abstract class HiddenMaterialRules<P extends number = number, M extends n
   /**
    * Override of {@link MaterialRules.play} that also removes the hidden information from items, for example when a card is flipped face down
    */
-  play(move: MaterialMoveRandomized<P, M, L> | MaterialMoveView<P, M, L>, context?: PlayMoveContext): MaterialMove<P, M, L>[] {
+  play(move: MaterialMoveRandomized<P, M, L, R> | MaterialMoveView<P, M, L, R>, context?: PlayMoveContext): MaterialMove<P, M, L, R>[] {
     const result = super.play(move, context)
 
     if (this.client && isMoveItem(move) && this.hidingStrategies[move.itemType]) {

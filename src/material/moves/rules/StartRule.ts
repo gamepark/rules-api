@@ -7,6 +7,6 @@ export type StartRule<RuleId extends number = number> = RuleMoveCommon & {
   id: RuleId
 }
 
-export function isStartRule<P extends number, M extends number, L extends number>(move: MaterialMove<P, M, L>): move is StartRule<P> {
+export function isStartRule<P extends number, M extends number, L extends number, R extends number>(move: MaterialMove<P, M, L, R>): move is StartRule<R> {
   return move.kind === MoveKind.RulesMove && move.type === RuleMoveType.StartRule
 }

@@ -10,8 +10,8 @@ import { RuleStep } from './RuleStep'
  * This is the base class to implement one part of the rules.
  * The constructor cannot be changed as the class is instantiated by {@link MaterialRules}.
  */
-export abstract class MaterialRulesPart<Player extends number = number, MaterialType extends number = number, LocationType extends number = number>
-  extends Rules<MaterialGame<Player, MaterialType, LocationType>, MaterialMove<Player, MaterialType, LocationType>, Player> {
+export abstract class MaterialRulesPart<Player extends number = number, MaterialType extends number = number, LocationType extends number = number, RuleId extends number = number>
+  extends Rules<MaterialGame<Player, MaterialType, LocationType, RuleId>, MaterialMove<Player, MaterialType, LocationType, RuleId>, Player> {
 
   /**
    * Helper function to get a {@link Material} instance to work on some item type in the game.
@@ -28,7 +28,7 @@ export abstract class MaterialRulesPart<Player extends number = number, Material
    * @param _context Context of execution
    * @returns {MaterialMove[]} Any consequences that should automatically be played after the move
    */
-  beforeItemMove(_move: ItemMove<Player, MaterialType, LocationType>, _context?: PlayMoveContext): MaterialMove<Player, MaterialType, LocationType>[] {
+  beforeItemMove(_move: ItemMove<Player, MaterialType, LocationType>, _context?: PlayMoveContext): MaterialMove<Player, MaterialType, LocationType, RuleId>[] {
     return []
   }
 
@@ -38,7 +38,7 @@ export abstract class MaterialRulesPart<Player extends number = number, Material
    * @param _context Context of execution
    * @returns {MaterialMove[]} Any consequences that should automatically be played after the move
    */
-  afterItemMove(_move: ItemMove<Player, MaterialType, LocationType>, _context?: PlayMoveContext): MaterialMove<Player, MaterialType, LocationType>[] {
+  afterItemMove(_move: ItemMove<Player, MaterialType, LocationType>, _context?: PlayMoveContext): MaterialMove<Player, MaterialType, LocationType, RuleId>[] {
     return []
   }
 
@@ -49,7 +49,7 @@ export abstract class MaterialRulesPart<Player extends number = number, Material
    * @param _context Context of execution
    * @returns {MaterialMove[]} Any consequences that should automatically be played after the move
    */
-  onRuleStart<RuleId extends number>(_move: RuleMove<Player, RuleId>, _previousRule?: RuleStep, _context?: PlayMoveContext): MaterialMove<Player, MaterialType, LocationType>[] {
+  onRuleStart(_move: RuleMove<Player, RuleId>, _previousRule?: RuleStep, _context?: PlayMoveContext): MaterialMove<Player, MaterialType, LocationType, RuleId>[] {
     return []
   }
 
@@ -62,7 +62,7 @@ export abstract class MaterialRulesPart<Player extends number = number, Material
    * @param _context Context of execution
    * @returns {MaterialMove[]} Any consequences that should automatically be played after the move
    */
-  onRuleEnd<RuleId extends number>(_move: RuleMove<Player, RuleId>, _context?: PlayMoveContext): MaterialMove<Player, MaterialType, LocationType>[] {
+  onRuleEnd(_move: RuleMove<Player, RuleId>, _context?: PlayMoveContext): MaterialMove<Player, MaterialType, LocationType, RuleId>[] {
     return []
   }
 
@@ -72,7 +72,7 @@ export abstract class MaterialRulesPart<Player extends number = number, Material
    * @param _context Context of execution
    * @returns {MaterialMove[]} Any consequences that should automatically be played after the move
    */
-  onCustomMove(_move: CustomMove, _context?: PlayMoveContext): MaterialMove<Player, MaterialType, LocationType>[] {
+  onCustomMove(_move: CustomMove, _context?: PlayMoveContext): MaterialMove<Player, MaterialType, LocationType, RuleId>[] {
     return []
   }
 
@@ -137,8 +137,10 @@ export abstract class MaterialRulesPart<Player extends number = number, Material
  */
 export interface MaterialRulesPartCreator<Player extends number = number,
   MaterialType extends number = number,
-  LocationType extends number = number> {
+  LocationType extends number = number,
+  RuleId extends number = number
+> {
   new(
-    game: MaterialGame<Player, MaterialType, LocationType>
-  ): MaterialRulesPart<Player, MaterialType, LocationType>
+    game: MaterialGame<Player, MaterialType, LocationType, RuleId>
+  ): MaterialRulesPart<Player, MaterialType, LocationType, RuleId>
 }

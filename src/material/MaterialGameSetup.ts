@@ -10,24 +10,24 @@ import { TutorialState } from './tutorial'
 /**
  * Helper class to implement {@link GameSetup} when using the {@link MaterialRules} approach.
  */
-export abstract class MaterialGameSetup<P extends number = number, M extends number = number, L extends number = number, Options = any>
-  implements GameSetup<MaterialGame<P, M, L>, Options> {
+export abstract class MaterialGameSetup<P extends number = number, M extends number = number, L extends number = number, Options = any, R extends number = number>
+  implements GameSetup<MaterialGame<P, M, L, R>, Options> {
 
   /**
    * The rules of the game
    */
-  abstract Rules: MaterialRulesCreator<P, M, L>
+  abstract Rules: MaterialRulesCreator<P, M, L, R>
 
   /**
    * The game setup state we are working on
    * @protected
    */
-  protected game: MaterialGame<P, M, L> = { players: [], items: {}, memory: {} }
+  protected game: MaterialGame<P, M, L, R> = { players: [], items: {}, memory: {} }
 
   /**
    * Get an instance of the rules of the game
    */
-  get rules(): MaterialRules<P, M, L> {
+  get rules(): MaterialRules<P, M, L, R> {
     return new this.Rules(this.game)
   }
 
@@ -37,7 +37,7 @@ export abstract class MaterialGameSetup<P extends number = number, M extends num
    * @param tutorial Initial tutorial state if any
    * @returns the initial state of the game
    */
-  setup(options: Options, tutorial?: TutorialState): MaterialGame<P, M, L> {
+  setup(options: Options, tutorial?: TutorialState<P, M, L, R>): MaterialGame<P, M, L, R> {
     this.game = { players: getPlayerIds(options), items: {}, memory: {}, tutorial }
     this.setupMaterial(options)
     this.start(options)
@@ -68,7 +68,7 @@ export abstract class MaterialGameSetup<P extends number = number, M extends num
    * @param move The MaterialMove to play
    * @protected
    */
-  protected playMove(move: MaterialMove<P, M, L>) {
+  protected playMove(move: MaterialMove<P, M, L, R>) {
     if (hasRandomMove(this.rules)) {
       move = this.rules.randomize(move)
     }
@@ -119,7 +119,7 @@ export abstract class MaterialGameSetup<P extends number = number, M extends num
    * @param id Rule id to start
    * @param player Player that starts the game (default value: this.game.players[0])
    */
-  startPlayerTurn<RuleId extends number = number>(id: RuleId, player: P = this.game.players[0]) {
+  startPlayerTurn(id: R, player: P = this.game.players[0]) {
     this.playMove(MaterialMoveBuilder.startPlayerTurn(id, player))
   }
 
@@ -128,7 +128,7 @@ export abstract class MaterialGameSetup<P extends number = number, M extends num
    * @param id Rule id to start
    * @param players Players that are active (all the players by default)
    */
-  startSimultaneousRule<RuleId extends number = number>(id: RuleId, players?: P[]) {
+  startSimultaneousRule(id: R, players?: P[]) {
     this.playMove(MaterialMoveBuilder.startSimultaneousRule(id, players))
   }
 
@@ -136,7 +136,7 @@ export abstract class MaterialGameSetup<P extends number = number, M extends num
    * Helper function to play a {@link StartRule} move on the game setup state.
    * @param id Rule id to start
    */
-  startRule<RuleId extends number = number>(id: RuleId) {
+  startRule(id: R) {
     this.playMove(MaterialMoveBuilder.startRule(id))
   }
 }
