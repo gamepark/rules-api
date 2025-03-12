@@ -8,6 +8,6 @@ export type StartPlayerTurn<Player extends number = number, RuleId extends numbe
   player?: Player
 }
 
-export function isStartPlayerTurn<P extends number, M extends number, L extends number>(move: MaterialMove<P, M, L>): move is StartPlayerTurn<P> {
+export function isStartPlayerTurn<P extends number, M extends number, L extends number, R extends number>(move: MaterialMove<P, M, L, R>): move is StartPlayerTurn<P, R> {
   return move.kind === MoveKind.RulesMove && move.type === RuleMoveType.StartPlayerTurn
 }

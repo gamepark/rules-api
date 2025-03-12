@@ -8,6 +8,6 @@ export type StartSimultaneousRule<Player extends number = number, RuleId extends
   players?: Player[]
 }
 
-export function isStartSimultaneousRule<P extends number, M extends number, L extends number>(move: MaterialMove<P, M, L>): move is StartSimultaneousRule<P> {
+export function isStartSimultaneousRule<P extends number, M extends number, L extends number, R extends number>(move: MaterialMove<P, M, L, R>): move is StartSimultaneousRule<P, R> {
   return move.kind === MoveKind.RulesMove && move.type === RuleMoveType.StartSimultaneousRule
 }

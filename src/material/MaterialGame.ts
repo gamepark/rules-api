@@ -17,13 +17,14 @@ import { TutorialState } from './tutorial'
  */
 export type MaterialGame<Player extends number = number,
   MaterialType extends number = number,
-  LocationType extends number = number> = {
+  LocationType extends number = number,
+  RuleId extends number = number> = {
   players: Player[]
   items: Partial<Record<MaterialType, MaterialItem<Player, LocationType>[]>>
-  rule?: RuleStep<Player>
+  rule?: RuleStep<Player, RuleId>
   memory: Record<keyof any, any>
   helpDisplay?: HelpDisplay<Player, MaterialType, LocationType>
   droppedItem?: DisplayedItem<MaterialType>
-  tutorial?: TutorialState
+  tutorial?: TutorialState<Player, MaterialType, LocationType, RuleId>
   transientItems?: Partial<Record<MaterialType, number[]>>
 }

@@ -6,8 +6,8 @@ import { LocalMoveType } from './LocalMove'
 /**
  * Common type for the moves that display a help dialog
  */
-export type HelpDisplay<P extends number = number, M extends number = number, L extends number = number, RuleId extends number = number>
-  = MaterialHelpDisplay<P, M, L>
+export type HelpDisplay<P extends number = number, M extends number = number, L extends number = number, RuleId extends number = number, I = any>
+  = MaterialHelpDisplay<P, M, L, I>
   | LocationHelpDisplay<P, L>
   | RulesHelpDisplay<RuleId>
 
@@ -21,12 +21,12 @@ export enum HelpDisplayType {
 /**
  * Data structure describing a help dialog about a {@link MaterialItem}
  */
-export type MaterialHelpDisplay<P extends number = number, M extends number = number, L extends number = number> = {
+export type MaterialHelpDisplay<P extends number = number, M extends number = number, L extends number = number, I = any> = {
   type: typeof HelpDisplayType.Material
   itemType: M
   itemIndex?: number
   displayIndex?: number
-  item: Partial<MaterialItem<P, L>>
+  item: Partial<MaterialItem<P, L, I>>
 }
 
 /**
@@ -48,8 +48,8 @@ export type RulesHelpDisplay<RuleId extends number = number> = {
 /**
  * Move object to display a help dialog
  */
-export type DisplayHelp<P extends number = number, M extends number = number, L extends number = number> = {
+export type DisplayHelp<P extends number = number, M extends number = number, L extends number = number, R extends number = number, I = any> = {
   kind: MoveKind.LocalMove
   type: typeof LocalMoveType.DisplayHelp
-  helpDisplay?: HelpDisplay<P, M, L>
+  helpDisplay?: HelpDisplay<P, M, L, R, I>
 }

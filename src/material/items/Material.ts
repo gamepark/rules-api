@@ -192,7 +192,7 @@ export class Material<P extends number = number, M extends number = number, L ex
    * @param {function | number} arg Location type to keep, or predicate function to match the location of the items to keep
    * @returns {this} New instance with only the items which locations match the argument
    */
-  location(arg: L | ((location: Location<P, L>) => boolean)): this {
+  location<Id = any, Rotation = any>(arg: L | ((location: Location<P, L, Id, Rotation>) => boolean)): this {
     return this.filter(({ location }) => typeof arg === 'function' ? arg(location) : location.type === arg)
   }
 
@@ -389,7 +389,7 @@ export class Material<P extends number = number, M extends number = number, L ex
    * @param {number | undefined} quantity Optional: for items with a quantity, the number of items to move. If undefined, the item is completely moved.
    * @returns {MoveItem} the move that will change the location of the item (or a part of its quantity) when executed
    */
-  moveItem(location: Location<P, L> | ((item: MaterialItem<P, L>) => Location<P, L>), quantity?: number): MoveItem<P, M, L> {
+  moveItem<Id = any, Rotation = any>(location: Location<P, L, Id, Rotation> | ((item: MaterialItem<P, L>) => Location<P, L, Id, Rotation>), quantity?: number): MoveItem<P, M, L> {
     switch (this.length) {
       case 0:
         throw new Error('You are trying to move an item that does not exists')
@@ -407,7 +407,7 @@ export class Material<P extends number = number, M extends number = number, L ex
    * @param {number | undefined} quantity Optional: for items with a quantity, the number of items to move. If undefined, the items are completely moved.
    * @returns {MoveItem[]} the moves that will change the location of the items (or a part of their quantity) when executed
    */
-  moveItems(location: Partial<Location<P, L>> | ((item: MaterialItem<P, L>, index: number) => Partial<Location<P, L>>), quantity?: number): MoveItem<P, M, L>[] {
+  moveItems<Id = any, Rotation = any>(location: Partial<Location<P, L, Id, Rotation>> | ((item: MaterialItem<P, L>, index: number) => Partial<Location<P, L, Id, Rotation>>), quantity?: number): MoveItem<P, M, L>[] {
     const getLocation = typeof location === 'function' ? location : () => location
     return this.process(this.entries.map(entry => {
       const location = getLocation(entry[1], entry[0])
@@ -429,7 +429,7 @@ export class Material<P extends number = number, M extends number = number, L ex
    * @param {Location} location The new location of the items. It can only be the same location for every item.
    * @returns {MoveItemsAtOnce} the move that will change the location of the items when executed
    */
-  moveItemsAtOnce(location: Partial<Location<P, L>>): MoveItemsAtOnce<P, M, L> {
+  moveItemsAtOnce<Id = any, Rotation = any>(location: Partial<Location<P, L, Id, Rotation>>): MoveItemsAtOnce<P, M, L> {
     const move: MoveItemsAtOnce<P, M, L> = {
       kind: MoveKind.ItemMove,
       type: ItemMoveType.MoveAtOnce,

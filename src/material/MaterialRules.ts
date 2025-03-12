@@ -46,12 +46,12 @@ import { isSimultaneousRule, MaterialRulesPart, MaterialRulesPartCreator } from 
  * @typeparam MaterialType - Numeric enum of the types of material manipulated in the game
  * @typeparam LocationType - Numeric enum of the types of location in the game where the material can be located
  */
-export abstract class MaterialRules<Player extends number = number, MaterialType extends number = number, LocationType extends number = number>
-  extends Rules<MaterialGame<Player, MaterialType, LocationType>, MaterialMove<Player, MaterialType, LocationType>, Player>
-  implements RandomMove<MaterialMove<Player, MaterialType, LocationType>, MaterialMoveRandomized<Player, MaterialType, LocationType>, Player>,
-    Undo<MaterialGame<Player, MaterialType, LocationType>, MaterialMove<Player, MaterialType, LocationType>, Player>,
-    UnpredictableMoves<MaterialMove<Player, MaterialType, LocationType>>,
-    TimeLimit<MaterialGame<Player, MaterialType, LocationType>, MaterialMove<Player, MaterialType, LocationType>, Player> {
+export abstract class MaterialRules<Player extends number = number, MaterialType extends number = number, LocationType extends number = number, RuleId extends number = number>
+  extends Rules<MaterialGame<Player, MaterialType, LocationType, RuleId>, MaterialMove<Player, MaterialType, LocationType, RuleId>, Player>
+  implements RandomMove<MaterialMove<Player, MaterialType, LocationType, RuleId>, MaterialMoveRandomized<Player, MaterialType, LocationType, RuleId>, Player>,
+    Undo<MaterialGame<Player, MaterialType, LocationType, RuleId>, MaterialMove<Player, MaterialType, LocationType, RuleId>, Player>,
+    UnpredictableMoves<MaterialMove<Player, MaterialType, LocationType, RuleId>>,
+    TimeLimit<MaterialGame<Player, MaterialType, LocationType, RuleId>, MaterialMove<Player, MaterialType, LocationType, RuleId>, Player> {
 
   /**
    * When you implement a game using the "material" approach, you are also strongly advised to split the rules of the game into many small parts.
@@ -59,7 +59,7 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
    * This "rules" property must be implemented to map each "rule id" with the corresponding MaterialRulesPart class.
    * This way, the behavior of the rules can be delegated to the corresponding rule part at each step of the game.
    */
-  abstract readonly rules: Record<number, MaterialRulesPartCreator<Player, MaterialType, LocationType>>
+  abstract readonly rules: Record<RuleId, MaterialRulesPartCreator<Player, MaterialType, LocationType, RuleId>>
 
   /**
    * The "location strategies" are global rules that always apply in a game when we want to maintain a consistency in the position of the material.
@@ -116,7 +116,7 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
    *
    * @returns the class that handled the rules of the game, at current specific game state.
    */
-  get rulesStep(): MaterialRulesPart<Player, MaterialType, LocationType> | undefined {
+  get rulesStep(): MaterialRulesPart<Player, MaterialType, LocationType, RuleId> | undefined {
     if (!this.game.rule) return
     const RulesStep = this.rules[this.game.rule.id]
     if (!RulesStep) {
@@ -153,7 +153,7 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
   /**
    * In the material approach, the rules behavior is delegated to the current {@link rulesStep}. See {@link Rules.delegate}
    */
-  delegate(): Rules<MaterialGame<Player, MaterialType, LocationType>, MaterialMove<Player, MaterialType, LocationType>, Player> | undefined {
+  delegate(): Rules<MaterialGame<Player, MaterialType, LocationType, RuleId>, MaterialMove<Player, MaterialType, LocationType, RuleId>, Player> | undefined {
     return this.rulesStep
   }
 
@@ -163,8 +163,8 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
    * @returns the randomized move
    */
   randomize(
-    move: MaterialMove<Player, MaterialType, LocationType>
-  ): MaterialMove<Player, MaterialType, LocationType> & MaterialMoveRandomized<Player, MaterialType, LocationType> {
+    move: MaterialMove<Player, MaterialType, LocationType, RuleId>
+  ): MaterialMove<Player, MaterialType, LocationType, RuleId> & MaterialMoveRandomized<Player, MaterialType, LocationType, RuleId> {
     if (isShuffle(move)) {
       return { ...move, newIndexes: shuffle(move.indexes) }
     } else if (isRoll(move)) {
@@ -193,10 +193,10 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
    * @returns Consequences of the move
    */
   play(
-    move: MaterialMoveRandomized<Player, MaterialType, LocationType> | MaterialMoveView<Player, MaterialType, LocationType>, context?: PlayMoveContext
-  ): MaterialMove<Player, MaterialType, LocationType>[] {
+    move: MaterialMoveRandomized<Player, MaterialType, LocationType, RuleId> | MaterialMoveView<Player, MaterialType, LocationType, RuleId>, context?: PlayMoveContext
+  ): MaterialMove<Player, MaterialType, LocationType, RuleId>[] {
 
-    const consequences: MaterialMove<Player, MaterialType, LocationType>[] = []
+    const consequences: MaterialMove<Player, MaterialType, LocationType, RuleId>[] = []
     const rulesStep = this.rulesStep
     switch (move.kind) {
       case MoveKind.ItemMove:
@@ -237,8 +237,8 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
   }
 
   protected onPlayItemMove(move: ItemMoveRandomized<Player, MaterialType, LocationType> | ItemMoveView<Player, MaterialType, LocationType>,
-                           context?: PlayMoveContext): MaterialMove<Player, MaterialType, LocationType>[] {
-    const consequences: MaterialMove<Player, MaterialType, LocationType>[] = []
+                           context?: PlayMoveContext): MaterialMove<Player, MaterialType, LocationType, RuleId>[] {
+    const consequences: MaterialMove<Player, MaterialType, LocationType, RuleId>[] = []
     const rulesStep = this.rulesStep
     consequences.push(...this.beforeItemMove(move, context))
     if (rulesStep && !context?.transient) {
@@ -265,20 +265,20 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
     return consequences
   }
 
-  protected beforeItemMove(_move: ItemMove<Player, MaterialType, LocationType>, _context?: PlayMoveContext): MaterialMove<Player, MaterialType, LocationType>[] {
+  protected beforeItemMove(_move: ItemMove<Player, MaterialType, LocationType>, _context?: PlayMoveContext): MaterialMove<Player, MaterialType, LocationType, RuleId>[] {
     return []
   }
 
-  protected afterItemMove(_move: ItemMove<Player, MaterialType, LocationType>, _context?: PlayMoveContext): MaterialMove<Player, MaterialType, LocationType>[] {
+  protected afterItemMove(_move: ItemMove<Player, MaterialType, LocationType>, _context?: PlayMoveContext): MaterialMove<Player, MaterialType, LocationType, RuleId>[] {
     return []
   }
 
-  protected onCustomMove(_move: CustomMove, _context?: PlayMoveContext): MaterialMove<Player, MaterialType, LocationType>[] {
+  protected onCustomMove(_move: CustomMove, _context?: PlayMoveContext): MaterialMove<Player, MaterialType, LocationType, RuleId>[] {
     return []
   }
 
-  private onPlayRulesMove(move: RuleMove<Player>, context?: PlayMoveContext): MaterialMove<Player, MaterialType, LocationType>[] {
-    const consequences: MaterialMove<Player, MaterialType, LocationType>[] = []
+  private onPlayRulesMove(move: RuleMove<Player, RuleId>, context?: PlayMoveContext): MaterialMove<Player, MaterialType, LocationType, RuleId>[] {
+    const consequences: MaterialMove<Player, MaterialType, LocationType, RuleId>[] = []
     const rulesStep = this.rulesStep
     if (move.type === RuleMoveType.EndPlayerTurn) {
       if (this.game.rule?.players?.includes(move.player)) {
@@ -298,7 +298,7 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
     return consequences
   }
 
-  private changeRule(move: RuleMove<Player>, context?: PlayMoveContext): MaterialMove<Player, MaterialType, LocationType>[] {
+  private changeRule(move: RuleMove<Player, RuleId>, context?: PlayMoveContext): MaterialMove<Player, MaterialType, LocationType, RuleId>[] {
     const moves = this.rulesStep?.onRuleEnd(move, context) ?? []
     const rule = this.game.rule
     switch (move.type) {
@@ -326,8 +326,8 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
    * @param consecutiveActions Action played in between
    * @returns true if the action can be undone by the player that played it
    */
-  canUndo(action: Action<MaterialMove<Player, MaterialType, LocationType>, Player>,
-          consecutiveActions: Action<MaterialMove<Player, MaterialType, LocationType>, Player>[]): boolean {
+  canUndo(action: Action<MaterialMove<Player, MaterialType, LocationType, RuleId>, Player>,
+          consecutiveActions: Action<MaterialMove<Player, MaterialType, LocationType, RuleId>, Player>[]): boolean {
     for (let i = consecutiveActions.length - 1; i >= 0; i--) {
       if (this.consecutiveActionBlocksUndo(action, consecutiveActions[i])) {
         return false
@@ -336,8 +336,8 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
     return !this.actionBlocksUndo(action)
   }
 
-  private consecutiveActionBlocksUndo(action: Action<MaterialMove<Player, MaterialType, LocationType>, Player>,
-                                      consecutiveAction: Action<MaterialMove<Player, MaterialType, LocationType>, Player>): boolean {
+  private consecutiveActionBlocksUndo(action: Action<MaterialMove<Player, MaterialType, LocationType, RuleId>, Player>,
+                                      consecutiveAction: Action<MaterialMove<Player, MaterialType, LocationType, RuleId>, Player>): boolean {
     if (this.actionActivatesPlayer(consecutiveAction)) {
       return true
     }
@@ -349,7 +349,7 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
     return false
   }
 
-  private actionBlocksUndo(action: Action<MaterialMove<Player, MaterialType, LocationType>, Player>): boolean {
+  private actionBlocksUndo(action: Action<MaterialMove<Player, MaterialType, LocationType, RuleId>, Player>): boolean {
     for (let i = action.consequences.length - 1; i >= 0; i--) {
       if (this.moveBlocksUndo(action.consequences[i])) {
         return true
@@ -358,7 +358,7 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
     return this.moveBlocksUndo(action.move)
   }
 
-  private actionActivatesPlayer(action: Action<MaterialMove<Player, MaterialType, LocationType>, Player>): boolean {
+  private actionActivatesPlayer(action: Action<MaterialMove<Player, MaterialType, LocationType, RuleId>, Player>): boolean {
     for (let i = action.consequences.length - 1; i >= 0; i--) {
       if (this.moveActivatesPlayer(action.consequences[i])) {
         return true
@@ -375,18 +375,18 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
    * @param move The move to consider
    * @returns true if the move blocks the undo
    */
-  protected moveBlocksUndo(move: MaterialMove<Player, MaterialType, LocationType>): boolean {
+  protected moveBlocksUndo(move: MaterialMove<Player, MaterialType, LocationType, RuleId>): boolean {
     return this.moveActivatesPlayer(move) || isRoll(move)
   }
 
-  private moveActivatesPlayer(move: MaterialMove<Player, MaterialType, LocationType>): boolean {
+  private moveActivatesPlayer(move: MaterialMove<Player, MaterialType, LocationType, RuleId>): boolean {
     return isStartPlayerTurn(move) || isStartSimultaneousRule(move)
   }
 
   /**
    * Restore help display & local item moves
    */
-  restoreTransientState(previousState: MaterialGame<Player, MaterialType, LocationType>) {
+  restoreTransientState(previousState: MaterialGame<Player, MaterialType, LocationType, RuleId>) {
     this.game.helpDisplay = previousState.helpDisplay
     this.game.transientItems = previousState.transientItems
     for (const type in previousState.transientItems) {
@@ -403,7 +403,7 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
    * @param _player The player playing the move
    * @returns true if the move outcome cannot be predicted on client side
    */
-  isUnpredictableMove(move: MaterialMove<Player, MaterialType, LocationType>, _player: Player): boolean {
+  isUnpredictableMove(move: MaterialMove<Player, MaterialType, LocationType, RuleId>, _player: Player): boolean {
     return isRoll(move)
   }
 
@@ -430,10 +430,10 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
 /**
  * Signature interface of the constructor of a class that implements MaterialRules
  */
-export interface MaterialRulesCreator<P extends number = number, M extends number = number, L extends number = number> {
-  new(state: MaterialGame<P, M, L>, client?: {
+export interface MaterialRulesCreator<P extends number = number, M extends number = number, L extends number = number, R extends number = number> {
+  new(state: MaterialGame<P, M, L, R>, client?: {
     player?: P
-  }): MaterialRules<P, M, L>
+  }): MaterialRules<P, M, L, R>
 }
 
 function getItemMoveIndexes(move: ItemMove): number[] {
