@@ -9,7 +9,7 @@ export const rankPlayers = <PlayerId = any>(rules: Rules<any, any, PlayerId>, pl
     const scoreA = rules.getScore(playerA)
     const scoreB = rules.getScore(playerB)
     if (scoreA !== scoreB) {
-      return scoreB - scoreA
+      return rules.rankByLowerScore ? scoreA - scoreB : scoreB - scoreA
     }
     if (rules.getTieBreaker) {
       for (let tieBreaker = 1; tieBreaker <= 10; tieBreaker++) {
