@@ -6,4 +6,5 @@ import { WithPlayersOptions } from './WithPlayersOptions'
 export type OptionsSpec<Options> =
   (Options extends WithPlayersOptions<infer P> ? WithPlayerOptionsSpec<P> : {})
   & { [key in keyof Omit<Options, 'players'>]: OptionSpecOf<Options[key]> }
-  & {validate?: (options: Partial<Options>, t: TFunction) => void }
+  & { validate?: (options: Partial<Options>, t: TFunction) => void }
+  & { subscriberRequired?: boolean }
