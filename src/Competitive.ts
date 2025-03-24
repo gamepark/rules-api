@@ -26,6 +26,8 @@ export interface CompetitiveScore<Game = any, Move = any, PlayerId = any> extend
    * @returns the tie-breaker value for this player, or undefined if no tie-breaker exists at this point
    */
   getTieBreaker?(tieBreaker: number, playerId: PlayerId): number | undefined
+
+  rankByLowerScore?: boolean
 }
 
 /**
