@@ -1,3 +1,4 @@
+export * from './adjacent-groups.util'
 export * from './action.util'
 export * from './action-view.util'
 export * from './automatic-moves.util'
