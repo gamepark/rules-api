@@ -25,7 +25,7 @@ import {
   ItemMove, ItemMoveRandomized,
   ItemMoveType, ItemMoveView,
   LocalMoveType,
-  MaterialMove,
+  MaterialMove, MaterialMoveBuilder,
   MaterialMoveRandomized,
   MaterialMoveView,
   MoveKind,
@@ -100,6 +100,16 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
   }
 
   /**
+   * Save a new value inside the memory.
+   * @param key The key to index the memorized value.
+   * @param value Any JSON serializable value to store, or a function that takes previous stored value and returns the new value to store.
+   * @param player optional, if we need to memorize a different value for each player.
+   */
+  memorize<T = any>(key: keyof any, value: T | ((lastValue: T) => T), player?: Player): void {
+    this.getMemory(player).memorize(key, value)
+  }
+
+  /**
    * Retrieve the value memorized under a given key.
    * Shortcut for this.game.memory[key] or this.game.memory[key][player]
    *
@@ -109,6 +119,21 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
   remind<T = any>(key: keyof any, player?: Player): T {
     return this.getMemory(player).remind(key)
   }
+
+  /**
+   * Delete a value from the memory
+   * @param key Key of the value to delete
+   * @param player optional, if we need to memorize a different value for each player.
+   */
+  forget(key: keyof any, player?: Player): void {
+    this.getMemory(player).forget(key)
+  }
+
+  startPlayerTurn = MaterialMoveBuilder.startPlayerTurn
+  startSimultaneousRule = MaterialMoveBuilder.startSimultaneousRule
+  startRule = MaterialMoveBuilder.startRule
+  customMove = MaterialMoveBuilder.customMove
+  endGame = MaterialMoveBuilder.endGame
 
   /**
    * Instantiates the class that handled the rules of the game corresponding to the current rule id.
