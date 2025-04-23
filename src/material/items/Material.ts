@@ -242,7 +242,7 @@ export class Material<P extends number = number, M extends number = number, L ex
    * @param {number | boolean} selected The selected value to compare (default is true)
    * @returns {this} New instance with only the items which are selected
    */
-  selected(selected: number | boolean = true) {
+  selected(selected: number | boolean = true): this {
     return this.filter(item => (item.selected ?? false) === selected)
   }
 
