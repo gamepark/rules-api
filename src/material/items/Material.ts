@@ -172,8 +172,8 @@ export class Material<P extends number = number, M extends number = number, L ex
    * @param {function} predicate The predicate function. Takes every item and index, and keep the item if it returns true
    * @returns {this} New instance with only the items that match the predicate
    */
-  filter(predicate: (item: MaterialItem<P, L>, index: number) => boolean): this {
-    return this.new(this.entries.filter(([index, item]) => predicate(item, index)))
+  filter<Id extends string | number | Record<string, any> | undefined>(predicate: (item: MaterialItem<P, L, Id>, index: number) => boolean): this {
+    return this.new(this.entries.filter(([index, item]) => predicate(item as MaterialItem<P, L, Id>, index)))
   }
 
   /**
@@ -183,7 +183,7 @@ export class Material<P extends number = number, M extends number = number, L ex
    * @returns {this} New instance with only the items which ids match the argument
    */
   id<Id extends string | number | Record<string, any> | undefined>(arg?: Id | ((id: Id) => boolean)): this {
-    return this.filter(({ id }) => typeof arg === 'function' ? arg(id) : isEqual(id, arg))
+    return this.filter<Id>(({ id }) => typeof arg === 'function' ? arg(id) : isEqual(id, arg))
   }
 
   /**
