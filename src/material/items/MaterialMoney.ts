@@ -55,7 +55,7 @@ export class MaterialMoney<P extends number = number, M extends number = number,
   /**
    * We need to apply the pending moves before any filtering is done to get the right count for instance.
    */
-  filter(predicate: (item: MaterialItem<P, L>, index: number) => boolean): this {
+  filter<Id extends string | number | Record<string, any> | undefined>(predicate: (item: MaterialItem<P, L, Id>, index: number) => boolean): this {
     this.applyPendingMoves()
     return super.filter(predicate)
   }
