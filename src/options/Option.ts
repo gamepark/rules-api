@@ -6,4 +6,5 @@ export type Option = {
   warn?: (t: TFunction) => string
   subscriberRequired?: boolean
   competitiveDisabled?: boolean
+  solo?: boolean
 }
