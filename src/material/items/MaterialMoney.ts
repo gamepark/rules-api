@@ -1,4 +1,4 @@
-import { cloneDeep } from 'lodash'
+import cloneDeep from 'lodash/cloneDeep'
 import isEqual from 'lodash/isEqual'
 import keyBy from 'lodash/keyBy'
 import mapValues from 'lodash/mapValues'
