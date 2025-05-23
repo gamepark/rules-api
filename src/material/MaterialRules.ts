@@ -14,18 +14,19 @@ import { MaterialGame } from './MaterialGame'
 import { GameMemory, PlayerMemory } from './memory'
 import {
   CustomMove,
-  isDeleteItem,
   isEndGame,
-  isMoveItem,
   isRoll,
   isSelectItem,
   isShuffle,
   isStartPlayerTurn,
   isStartSimultaneousRule,
-  ItemMove, ItemMoveRandomized,
-  ItemMoveType, ItemMoveView,
+  ItemMove,
+  ItemMoveRandomized,
+  ItemMoveType,
+  ItemMoveView,
   LocalMoveType,
-  MaterialMove, MaterialMoveBuilder,
+  MaterialMove,
+  MaterialMoveBuilder,
   MaterialMoveRandomized,
   MaterialMoveView,
   MoveKind,
@@ -242,7 +243,10 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
             this.game.helpDisplay = move.helpDisplay
             break
           case LocalMoveType.DropItem:
-            this.game.droppedItem = move.item
+            if (!this.game.droppedItems) {
+              this.game.droppedItems = []
+            }
+            this.game.droppedItems.push(move.item)
             break
           case LocalMoveType.SetTutorialStep:
             this.game.tutorial!.step = move.step
@@ -272,9 +276,19 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
     if (!this.game.items[move.itemType]) this.game.items[move.itemType] = []
     const mutator = this.mutator(move.itemType)
     mutator.applyMove(move)
-    if (this.game.droppedItem && (isMoveItem(move) || isDeleteItem(move))
-      && this.game.droppedItem.type === move.itemType && move.itemIndex === this.game.droppedItem.index) {
-      delete this.game.droppedItem
+    if (this.game.droppedItems) {
+      this.game.droppedItems = this.game.droppedItems.filter((droppedItem) => {
+        if (move.itemType !== droppedItem.type) {
+          return true
+        }
+        switch (move.type) {
+          case ItemMoveType.Move:
+          case ItemMoveType.Delete:
+            return move.itemIndex !== droppedItem.index
+          case ItemMoveType.MoveAtOnce:
+            return !move.indexes.includes(droppedItem.index)
+        }
+      })
     }
     const indexes = getItemMoveIndexes(move)
     if (context?.transient) {
