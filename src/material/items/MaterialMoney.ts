@@ -200,7 +200,7 @@ export class MaterialMoney<P extends number = number, M extends number = number,
             for (const lowerUnit of this.units.slice(i + 1)) {
               if (lowerUnit <= rest) {
                 map[lowerUnit] += Math.floor(rest / lowerUnit)
-                rest -= rest % lowerUnit
+                rest -= (rest % lowerUnit) * lowerUnit
               }
             }
           }
