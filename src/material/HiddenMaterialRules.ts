@@ -1,3 +1,4 @@
+import { keys } from 'lodash'
 import difference from 'lodash/difference'
 import get from 'lodash/get'
 import isEqual from 'lodash/isEqual'
@@ -135,7 +136,15 @@ export abstract class HiddenMaterialRules<P extends number = number, M extends n
 
   private getItemHiddenPaths(type: M, item: MaterialItem<P, L>, player?: P): string[] {
     const hidingStrategy = this.hidingStrategies[type]?.[item.location.type]
-    return hidingStrategy ? (hidingStrategy as HidingSecretsStrategy<P, L>)(item, player) : []
+    const hiddenPaths = hidingStrategy ? (hidingStrategy as HidingSecretsStrategy<P, L>)(item, player) : []
+    return hiddenPaths.flatMap((path) => {
+      const itemAtPath = get(item, path)
+      if (typeof itemAtPath === 'object') {
+        return keys(itemAtPath).map((key) => path + '.' + key)
+      } else {
+        return [path]
+      }
+    })
   }
 
   private itemHasHiddenInformation(type: M, item: MaterialItem<P, L>, player?: P): boolean {
@@ -206,6 +215,7 @@ export abstract class HiddenMaterialRules<P extends number = number, M extends n
     const item = this.material(move.itemType).getItem(move.itemIndex)
     const hiddenPathsBefore = this.getItemHiddenPaths(move.itemType, item, player)
     const hiddenPathsAfter = this.getItemHiddenPaths(move.itemType, this.mutator(move.itemType).getItemAfterMove(move), player)
+    console.log(hiddenPathsBefore, hiddenPathsAfter, difference(hiddenPathsBefore, hiddenPathsAfter))
     return difference(hiddenPathsBefore, hiddenPathsAfter)
   }
 
