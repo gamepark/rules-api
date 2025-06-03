@@ -1,4 +1,5 @@
 import { HexGridSystem, hexRotate, hexTranslate } from './grid.hex.util'
+import { XYCoordinates } from './grid.util'
 
 /**
  * Configuration of a Polyhex
@@ -50,6 +51,10 @@ export class Polyhex<T = any> implements PolyhexConfig<T> {
 
   get yMax() {
     return this.grid.length + this.yMin - 1
+  }
+
+  getValue(coordinates: XYCoordinates): T | undefined {
+    return this.grid[coordinates.y - this.yMin]?.[coordinates.x - this.xMin]
   }
 
   /**

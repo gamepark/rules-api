@@ -215,7 +215,6 @@ export abstract class HiddenMaterialRules<P extends number = number, M extends n
     const item = this.material(move.itemType).getItem(move.itemIndex)
     const hiddenPathsBefore = this.getItemHiddenPaths(move.itemType, item, player)
     const hiddenPathsAfter = this.getItemHiddenPaths(move.itemType, this.mutator(move.itemType).getItemAfterMove(move), player)
-    console.log(hiddenPathsBefore, hiddenPathsAfter, difference(hiddenPathsBefore, hiddenPathsAfter))
     return difference(hiddenPathsBefore, hiddenPathsAfter)
   }
 
