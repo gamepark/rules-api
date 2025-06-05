@@ -153,3 +153,22 @@ export function getPolyhexSpaces(polyhex: XYCoordinates[], location: Partial<Loc
     .map(hex => hexRotate(hex, location.rotation ?? 0, system))
     .map(hex => hexTranslate(hex, vector, system))
 }
+
+/**
+ * Get the coordinates of the 6 hexagons adjacent to a given hexagon.
+ * @param hex Coordinates of the hexagon
+ * @param system Coordinates system
+ */
+export function getAdjacentHexagons(hex: XYCoordinates, system = HexGridSystem.Axial): XYCoordinates[] {
+  if (system !== HexGridSystem.Axial) {
+    return getAdjacentHexagons(hexToAxial(hex, system)).map(((hex) => hexFromAxial(hex, system)))
+  }
+  return [
+    { x: hex.x + 1, y: hex.y },
+    { x: hex.x, y: hex.y + 1 },
+    { x: hex.x - 1, y: hex.y + 1 },
+    { x: hex.x - 1, y: hex.y },
+    { x: hex.x, y: hex.y - 1 },
+    { x: hex.x + 1, y: hex.y - 1 }
+  ]
+}
