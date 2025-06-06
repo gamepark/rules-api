@@ -18,6 +18,20 @@ function getPreviousAdjacentCoordinates({ x, y }: XYCoordinates, hexGridSystem?:
       if (x > 0) adjacentCoordinates.push({ x: x - 1, y })
       if (y > 0) adjacentCoordinates.push({ x, y: y - 1 }, { x: x + 1, y: y - 1 })
       return adjacentCoordinates
+    case HexGridSystem.OddQ:
+    case HexGridSystem.EvenQ:
+      if (x > 0) adjacentCoordinates.push({ x: x - 1, y })
+      if (y > 0) {
+        if (hexGridSystem === (x % 2 ? HexGridSystem.OddQ : HexGridSystem.EvenQ)) {
+          adjacentCoordinates.push({ x, y: y - 1 })
+        } else {
+          if (x > 0) {
+            adjacentCoordinates.push({ x: x - 1, y: y - 1 })
+          }
+          adjacentCoordinates.push({ x, y: y - 1 }, { x: x + 1, y: y - 1 })
+        }
+      }
+      return adjacentCoordinates
     default:
       throw new Error('Not implemented')
   }
