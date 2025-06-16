@@ -24,9 +24,6 @@ export class PlayerMemory<Player extends number = number> {
     } else {
       this.game.memory[key][this.player] = value
     }
-    if (typeof this.game.memory[key][this.player] === 'object') {
-      this.game.memory[key][this.player] = JSON.parse(JSON.stringify(this.game.memory[key][this.player]))
-    }
   }
 
   /**
