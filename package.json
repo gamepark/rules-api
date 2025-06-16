@@ -1,6 +1,6 @@
 {
   "name": "@gamepark/rules-api",
-  "version": "6.36.2",
+  "version": "6.36.7",
   "description": "API to implement the rules of a board game",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
