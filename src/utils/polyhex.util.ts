@@ -1,4 +1,4 @@
-import { HexGridSystem, hexRotate, hexTranslate } from './grid.hex.util'
+import { getHexagonsAtDistance, HexGridSystem, hexRotate, hexTranslate } from './grid.hex.util'
 import { XYCoordinates } from './grid.util'
 
 /**
@@ -93,5 +93,25 @@ export class Polyhex<T = any> implements PolyhexConfig<T> {
         }
       }
     }
+  }
+
+  /**
+   * Get the minimum distance from given hexagon to a hexagon of the polyhex that matches given predicate
+   * @param hex Starting hexagon
+   * @param predicate The predicate to match (not empty by default)
+   * @returns the minimum distance found
+   */
+  getDistance(hex: XYCoordinates, predicate = (value: T | undefined) => !this.isEmpty(value)) {
+    let distance = 0
+    const maxDistance = this.xMax + this.yMax - this.xMin - this.yMin
+    while (distance < maxDistance) {
+      const hexagonsAtDistance = getHexagonsAtDistance(hex, distance, this.system)
+      if (hexagonsAtDistance.some((hex) => predicate(this.getValue(hex)))) {
+        return distance
+      } else {
+        distance++
+      }
+    }
+    return Infinity
   }
 }

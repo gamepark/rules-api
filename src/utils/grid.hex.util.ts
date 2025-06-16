@@ -129,6 +129,30 @@ export function getDistanceBetweenHex(hex1: XYCoordinates, hex2: XYCoordinates, 
 }
 
 /**
+ * Get all the hexagons that are exactly at a specific distance from a given hexagon.
+ * @param hex Coordinates of the hexagon
+ * @param distance Distance of the hexagons we want
+ * @param system The coordinates system used
+ * @return the list of the hexagons found at distance from given hex
+ */
+export function getHexagonsAtDistance(hex: XYCoordinates, distance: number, system = HexGridSystem.Axial): XYCoordinates[] {
+  if (system !== HexGridSystem.Axial) {
+    return getHexagonsAtDistance(hexToAxial(hex, system), distance, HexGridSystem.Axial).map((hex) => hexFromAxial(hex, system))
+  }
+  if (distance <= 0) return [hex]
+  const result: XYCoordinates[] = []
+  let currentHex = { x: hex.x - distance, y: hex.y }
+  const vectors = [{ x: 1, y: -1 }, { x: 1, y: 0 }, { x: 0, y: 1 }, { x: -1, y: 1 }, { x: -1, y: 0 }, { x: 0, y: -1 }]
+  for (const vector of vectors) {
+    for (let j = 0; j < distance; j++) {
+      result.push(currentHex)
+      currentHex = hexTranslate(currentHex, vector)
+    }
+  }
+  return result
+}
+
+/**
  * Translate hexagonal coordinates by a vector.
  * @param hex Coordinates of the hexagon to translate
  * @param vector Vector of the translation
