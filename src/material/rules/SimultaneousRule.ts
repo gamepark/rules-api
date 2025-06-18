@@ -18,6 +18,13 @@ export abstract class SimultaneousRule<Player extends number = number, MaterialT
   }
 
   /**
+   * @returns all the active players
+   */
+  get activePlayers(): Player[] {
+    return this.game.rule?.players ?? []
+  }
+
+  /**
    * See {@link Rules.getLegalMoves}
    */
   getLegalMoves(player: Player): MaterialMove<Player, MaterialType, LocationType, RuleId>[] {
