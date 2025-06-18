@@ -89,6 +89,20 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
   }
 
   /**
+   * @return the active player if exactly one player is active
+   */
+  get activePlayer(): Player | undefined {
+    return this.getActivePlayer()
+  }
+
+  /**
+   * @returns all the active players
+   */
+  get activePlayers(): Player[] {
+    return this.game.rule?.player !== undefined ? [this.game.rule.player] : this.game.rule?.players ?? []
+  }
+
+  /**
    * Utility function to access the memory tool for the game or on player.
    * this.game.memory can be used to store any data that is not available through the state of the material, or current rule.
    *
