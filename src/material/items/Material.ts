@@ -389,7 +389,10 @@ export class Material<P extends number = number, M extends number = number, L ex
    * @param {number | undefined} quantity Optional: for items with a quantity, the number of items to move. If undefined, the item is completely moved.
    * @returns {MoveItem} the move that will change the location of the item (or a part of its quantity) when executed
    */
-  moveItem<Id = any, Rotation = any>(location: Location<P, L, Id, Rotation> | ((item: MaterialItem<P, L>) => Location<P, L, Id, Rotation>), quantity?: number): MoveItem<P, M, L> {
+  moveItem<ItemId = any, LocId = ItemId, Rotation = any>(
+    location: Location<P, L, LocId, Rotation> | ((item: MaterialItem<P, L, ItemId>) => Location<P, L, LocId, Rotation>),
+    quantity?: number
+  ): MoveItem<P, M, L> {
     switch (this.length) {
       case 0:
         throw new Error('You are trying to move an item that does not exists')
@@ -407,10 +410,13 @@ export class Material<P extends number = number, M extends number = number, L ex
    * @param {number | undefined} quantity Optional: for items with a quantity, the number of items to move. If undefined, the items are completely moved.
    * @returns {MoveItem[]} the moves that will change the location of the items (or a part of their quantity) when executed
    */
-  moveItems<Id = any, Rotation = any>(location: Partial<Location<P, L, Id, Rotation>> | ((item: MaterialItem<P, L>, index: number) => Partial<Location<P, L, Id, Rotation>>), quantity?: number): MoveItem<P, M, L>[] {
+  moveItems<ItemId = any, LocId = ItemId, Rotation = any>(
+    location: Partial<Location<P, L, LocId, Rotation>> | ((item: MaterialItem<P, L, ItemId>, index: number) => Partial<Location<P, L, LocId, Rotation>>),
+    quantity?: number
+  ): MoveItem<P, M, L>[] {
     const getLocation = typeof location === 'function' ? location : () => location
     return this.process(this.entries.map(entry => {
-      const location = getLocation(entry[1], entry[0])
+      const location = getLocation(entry[1] as MaterialItem<P, L, ItemId>, entry[0])
       const move: MoveItem<P, M, L> = {
         kind: MoveKind.ItemMove,
         type: ItemMoveType.Move,
