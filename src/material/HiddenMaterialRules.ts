@@ -96,8 +96,8 @@ export abstract class HiddenMaterialRules<P extends number = number, M extends n
   /**
    * Moves than reveals an information to someone cannot be undone by default
    */
-  protected moveBlocksUndo(move: MaterialMove<P, M, L, R>): boolean {
-    return super.moveBlocksUndo(move) || this.moveRevealedSomething(move)
+  protected moveBlocksUndo(move: MaterialMove<P, M, L, R>, player?: P): boolean {
+    return super.moveBlocksUndo(move, player) || this.moveRevealedSomething(move)
   }
 
   /**

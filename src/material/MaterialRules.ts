@@ -404,11 +404,11 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
 
   private actionBlocksUndo(action: Action<MaterialMove<Player, MaterialType, LocationType, RuleId>, Player>): boolean {
     for (let i = action.consequences.length - 1; i >= 0; i--) {
-      if (this.moveBlocksUndo(action.consequences[i])) {
+      if (this.moveBlocksUndo(action.consequences[i], action.playerId)) {
         return true
       }
     }
-    return this.moveBlocksUndo(action.move)
+    return this.moveBlocksUndo(action.move, action.playerId)
   }
 
   private actionActivatesPlayer(action: Action<MaterialMove<Player, MaterialType, LocationType, RuleId>, Player>): boolean {
@@ -426,14 +426,16 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
    * By default, a move block the undo if it activates a player or exposes new information (roll result, hidden information revealed...)
    *
    * @param move The move to consider
+   * @param player The player that triggered the move
    * @returns true if the move blocks the undo
    */
-  protected moveBlocksUndo(move: MaterialMove<Player, MaterialType, LocationType, RuleId>): boolean {
-    return this.moveActivatesPlayer(move) || isRoll(move)
+  protected moveBlocksUndo(move: MaterialMove<Player, MaterialType, LocationType, RuleId>, player?: Player): boolean {
+    return this.moveActivatesPlayer(move, player) || isRoll(move)
   }
 
-  private moveActivatesPlayer(move: MaterialMove<Player, MaterialType, LocationType, RuleId>): boolean {
-    return isStartPlayerTurn(move) || isStartSimultaneousRule(move)
+  private moveActivatesPlayer(move: MaterialMove<Player, MaterialType, LocationType, RuleId>, player?: Player): boolean {
+    return (isStartPlayerTurn(move) && move.player !== player)
+      || (isStartSimultaneousRule(move) && (move.players ?? this.game.players).some((p) => p !== player))
   }
 
   /**
