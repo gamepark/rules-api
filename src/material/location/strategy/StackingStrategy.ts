@@ -15,7 +15,7 @@ export class StackingStrategy implements LocationStrategy {
 
   moveItem(material: Material, item: MaterialItem, index: number) {
     const itemBefore = material.getItem(index)
-    if (itemBefore.location.x === item.location.x && itemBefore.location.y === itemBefore.location.y) {
+    if (itemBefore.location.x === item.location.x && itemBefore.location.y === item.location.y) {
       this.delegate.moveItem(material, item, index)
     } else {
       this.delegate.removeItem(material.index(i => i !== index).location(l => l.x === itemBefore.location.x && l.y === itemBefore.location.y), itemBefore)
