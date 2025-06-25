@@ -61,14 +61,18 @@ export function createAdjacentGroups<T = number>(map: T[][], options?: CreateAdj
         }
         if (!adjacentGroups.length) {
           groups[y][x] = { values: [value], coordinates: [{ x, y }] }
-        } else {
+        } else if (adjacentGroups.length === 1) {
+          adjacentGroups[0].values.push(value)
+          adjacentGroups[0].coordinates.push({ x, y })
           groups[y][x] = adjacentGroups[0]
-          groups[y][x].values.push(value)
-          groups[y][x].coordinates.push({ x, y })
-          for (let i = 1; i < adjacentGroups.length; i++) {
-            adjacentGroups[0].values.push(...adjacentGroups[i].values)
+        } else {
+          const fusionGroup: AdjacentGroup<T> = { values: [value], coordinates: [{ x, y }] }
+          groups[y][x] = fusionGroup
+          for (let i = 0; i < adjacentGroups.length; i++) {
+            fusionGroup.values.push(...adjacentGroups[i].values)
             for (const { x, y } of adjacentGroups[i].coordinates) {
-              groups[y][x] = adjacentGroups[0]
+              fusionGroup.coordinates.push({ x, y })
+              groups[y][x] = fusionGroup
             }
           }
         }
