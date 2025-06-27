@@ -16,12 +16,13 @@ export class GameMemory<Player extends number = number> {
    * @param key The key to index the memorized value
    * @param value Any JSON serializable value to store, or a function that takes previous stored value and returns the new value to store
    */
-  memorize<T = any>(key: keyof any, value: T | ((lastValue: T) => T)): void {
+  memorize<T = any>(key: keyof any, value: T | ((lastValue: T) => T)): T {
     if (typeof value === 'function') {
       this.game.memory[key] = (value as (lastValue: T) => T)(this.game.memory[key])
     } else {
       this.game.memory[key] = value
     }
+    return this.game.memory[key]
   }
 
   /**

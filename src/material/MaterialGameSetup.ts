@@ -103,8 +103,8 @@ export abstract class MaterialGameSetup<P extends number = number, M extends num
    * @param value Value to memorize
    * @param player optional, if we need to memorize a different value for each player.
    */
-  memorize<T = any>(key: keyof any, value: T | ((lastValue: T) => T), player?: P): void {
-    this.getMemory(player).memorize(key, value)
+  memorize<T = any>(key: keyof any, value: T | ((lastValue: T) => T), player?: P): T {
+    return this.getMemory(player).memorize(key, value)
   }
 
   /**

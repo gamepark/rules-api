@@ -120,8 +120,8 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
    * @param value Any JSON serializable value to store, or a function that takes previous stored value and returns the new value to store.
    * @param player optional, if we need to memorize a different value for each player.
    */
-  memorize<T = any>(key: keyof any, value: T | ((lastValue: T) => T), player?: Player): void {
-    this.getMemory(player).memorize(key, value)
+  memorize<T = any>(key: keyof any, value: T | ((lastValue: T) => T), player?: Player): T {
+    return this.getMemory(player).memorize(key, value)
   }
 
   /**
