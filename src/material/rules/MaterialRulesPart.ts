@@ -130,6 +130,14 @@ export abstract class MaterialRulesPart<Player extends number = number, Material
   forget(key: keyof any, player?: Player): void {
     this.getMemory(player).forget(key)
   }
+
+  /**
+   * @deprecated because of the lifecycle of this method, the game state must never be modified inside it. However, it is a very common mistake, so
+   * this method should not be used in the material rules parts: use {@link play} method to return the automatic moves.
+   */
+  getAutomaticMoves(): MaterialMove<Player, MaterialType, LocationType, RuleId>[] {
+    return []
+  }
 }
 
 /**

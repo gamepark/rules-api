@@ -127,9 +127,6 @@ export abstract class Rules<Game = any, Move = any, PlayerId = any> {
    * When some game state require automatic actions to be taken by the players, you can return a list of moves to play played automatically.
    * It can be a sequences in the rules where everything is scripted for instance (no choices left for players).
    *
-   * @deprecated because of the lifecycle of this method, the game state must never be modified inside it. However, it is a very common mistake, so
-   * this method should not be used at all: use {@link play} method to return the automatic moves.
-   *
    * Supports delegation with {@link delegates}: by default it will return all the automatic moves of each delegate.
    *
    * @returns the list of the moves that must be played automatically
