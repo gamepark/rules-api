@@ -14,3 +14,16 @@ export function getNeighbors<T extends string | number | boolean | object>(searc
     return distance === 1 || distance === array.length - 1
   })
 }
+
+/**
+ * Test if 2 items are neighbors in a ring array
+ * @param item1 First item
+ * @param item2 Second item
+ * @param array Array to search the neighbors in
+ * @returns true if items are neighbors in the array
+ */
+
+export function areNeighbors<T extends string | number | boolean | object>(item1: T, item2: T, array: T[]): boolean {
+  const distance = Math.abs(array.indexOf(item1) - array.indexOf(item2))
+  return distance === 1 || distance === array.length - 1
+}
