@@ -7,7 +7,7 @@ import { Rules } from './Rules'
  *
  * Beginner have up to x1.5 more thinking time, so the time given here must be for "experienced" players.
  */
-export interface TimeLimit<Game, Move = string, PlayerId = number> extends Rules<Game, Move, PlayerId> {
+export interface TimeLimit<Game = any, Move = string, PlayerId = number> extends Rules<Game, Move, PlayerId> {
   /**
    * Amount of time given to a player everytime it is their turn to play.
    * @param playerId Id of the player, if you want to give different time depending on the id for asymmetric games.
