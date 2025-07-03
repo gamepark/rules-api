@@ -30,12 +30,14 @@ export class MaterialMutator<P extends number = number, M extends number = numbe
    * @param items Items to work with
    * @param locationsStrategies The strategies that these items must follow
    * @param canMerge Whether to items at the exact same location can merge into one item with a quantity
+   * @param rulesClassName Constructor name of the main rules class for logging
    */
   constructor(
     private readonly type: M,
     private readonly items: MaterialItem<P, L>[],
     private readonly locationsStrategies: Partial<Record<L, LocationStrategy<P, M, L>>> = {},
-    private readonly canMerge: boolean = true
+    private readonly canMerge: boolean = true,
+    private readonly rulesClassName: string = ''
   ) {
   }
 
@@ -161,7 +163,7 @@ export class MaterialMutator<P extends number = number, M extends number = numbe
       mergeItem.quantity = (mergeItem.quantity ?? 1) + (move.item.quantity ?? 1)
     } else {
       if (move.item.quantity && !this.canMerge) {
-        console.error('Do not use quantity on items that cannot merge. Items that can be hidden cannot merge.')
+        console.error(`${this.rulesClassName}: do not use quantity on items that cannot merge. Items that can be hidden cannot merge.`)
       }
       this.addItem(JSON.parse(JSON.stringify(move.item)))
     }
@@ -174,7 +176,7 @@ export class MaterialMutator<P extends number = number, M extends number = numbe
     const mergeIndex = this.findMergeIndex(itemAfterMove)
     if (mergeIndex !== -1) {
       if (mergeIndex === move.itemIndex) {
-        console.warn('Item is moved to the location he already has.', move)
+        console.warn(`${this.rulesClassName}: item is moved to the location he already has - ${JSON.stringify(move)}`)
       } else {
         const mergeItem = this.items[mergeIndex]
         mergeItem.quantity = (mergeItem.quantity ?? 1) + quantity

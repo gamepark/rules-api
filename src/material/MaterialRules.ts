@@ -343,7 +343,7 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
           }
         }
       } else {
-        console.warn('EndPlayerTurn was triggered for a player which is already inactive')
+        console.warn(`${this.constructor.name}: endPlayerTurn was triggered for player ${move.player} which is already inactive: ${JSON.parse(JSON.stringify(this.game.rule))}`)
       }
     } else {
       consequences.push(...this.changeRule(move, context))
