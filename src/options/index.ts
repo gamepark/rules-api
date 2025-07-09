@@ -1,3 +1,4 @@
+export * from './EnumArrayOption'
 export * from './EnumOption'
 export * from './isWithPlayerIdOptions'
 export * from './Option'
