@@ -7,4 +7,5 @@ export type Option = {
   subscriberRequired?: boolean
   competitiveDisabled?: boolean
   solo?: boolean
+  hide?: (players: number) => boolean
 }
