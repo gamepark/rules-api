@@ -3,6 +3,7 @@ import { Option } from './Option'
 export type EnumOption<T = any> = Option & {
   values: T[]
   valueSpec: (value: T) => Option
+  competitiveValue?: T
 }
 
 export function isEnumOption<T = any>(option: Option): option is EnumOption<T> {
