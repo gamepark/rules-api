@@ -87,7 +87,7 @@ export abstract class HiddenMaterialRules<P extends number = number, M extends n
     } else if (isCreateItemsAtOnce(move)) {
       return move.items.some(item => this.itemHasHiddenInformation(move.itemType, item, player))
     } else if (isShuffle(move)) {
-      return this.canSeeShuffleResult(move, player)
+      return true
     } else {
       return super.isUnpredictableMove(move, player)
     }
