@@ -138,6 +138,7 @@ export abstract class HiddenMaterialRules<P extends number = number, M extends n
     const hidingStrategy = this.hidingStrategies[type]?.[item.location.type]
     const hiddenPaths = hidingStrategy ? (hidingStrategy as HidingSecretsStrategy<P, L>)(item, player) : []
     return hiddenPaths.flatMap((path) => {
+      if (!path) console.error('Empty paths are not allowed in hiding strategies')
       const itemAtPath = get(item, path)
       if (typeof itemAtPath === 'object') {
         return keys(itemAtPath).map((key) => path + '.' + key)
