@@ -1,7 +1,7 @@
-import { keys } from 'lodash'
 import difference from 'lodash/difference'
 import get from 'lodash/get'
 import isEqual from 'lodash/isEqual'
+import keys from 'lodash/keys'
 import mapValues from 'lodash/mapValues'
 import set from 'lodash/set'
 import unset from 'lodash/unset'
