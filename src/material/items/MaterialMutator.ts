@@ -212,13 +212,13 @@ export class MaterialMutator<P extends number = number, M extends number = numbe
     for (const index of move.indexes) {
       const sourceItem = this.items[index]
       const itemAfterMove = this.getItemAfterMoveAtOnce(move, index)
-      if (!isSameLocationArea(move.location, sourceItem.location)) {
+      if (!isSameLocationArea(itemAfterMove.location, sourceItem.location)) {
         this.applyAddItemStrategy(itemAfterMove)
       } else {
         this.applyMoveItemStrategy(itemAfterMove, index)
       }
       this.items[index] = itemAfterMove
-      if (!isSameLocationArea(move.location, sourceItem.location)) {
+      if (!isSameLocationArea(itemAfterMove.location, sourceItem.location)) {
         this.applyRemoveItemStrategy(sourceItem)
       }
     }
