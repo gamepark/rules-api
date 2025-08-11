@@ -237,7 +237,6 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
   ): MaterialMove<Player, MaterialType, LocationType, RuleId>[] {
 
     const consequences: MaterialMove<Player, MaterialType, LocationType, RuleId>[] = []
-    const rulesStep = this.rulesStep
     switch (move.kind) {
       case MoveKind.ItemMove:
         consequences.push(...this.onPlayItemMove(move, context))
@@ -247,9 +246,6 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
         break
       case MoveKind.CustomMove:
         consequences.push(...this.onCustomMove(move, context))
-        if (rulesStep) {
-          consequences.push(...rulesStep.onCustomMove(move, context))
-        }
         break
       case MoveKind.LocalMove:
         switch (move.type) {
@@ -282,10 +278,8 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
   protected onPlayItemMove(move: ItemMoveRandomized<Player, MaterialType, LocationType> | ItemMoveView<Player, MaterialType, LocationType>,
                            context?: PlayMoveContext): MaterialMove<Player, MaterialType, LocationType, RuleId>[] {
     const consequences: MaterialMove<Player, MaterialType, LocationType, RuleId>[] = []
-    const rulesStep = this.rulesStep
-    consequences.push(...this.beforeItemMove(move, context))
-    if (rulesStep && !context?.transient) {
-      consequences.push(...rulesStep.beforeItemMove(move, context))
+    if (!context?.transient) {
+      consequences.push(...this.beforeItemMove(move, context))
     }
     if (!this.game.items[move.itemType]) this.game.items[move.itemType] = []
     const mutator = this.mutator(move.itemType)
@@ -311,23 +305,22 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
     } else if (this.game.transientItems) {
       this.game.transientItems[move.itemType] = difference(this.game.transientItems[move.itemType], indexes)
     }
-    consequences.push(...this.afterItemMove(move, context))
-    if (rulesStep && !context?.transient) {
-      consequences.push(...rulesStep.afterItemMove(move, context))
+    if (!context?.transient) {
+      consequences.push(...this.afterItemMove(move, context))
     }
     return consequences
   }
 
-  protected beforeItemMove(_move: ItemMove<Player, MaterialType, LocationType>, _context?: PlayMoveContext): MaterialMove<Player, MaterialType, LocationType, RuleId>[] {
-    return []
+  protected beforeItemMove(move: ItemMove<Player, MaterialType, LocationType>, context?: PlayMoveContext): MaterialMove<Player, MaterialType, LocationType, RuleId>[] {
+    return this.rulesStep?.beforeItemMove(move, context) ?? []
   }
 
-  protected afterItemMove(_move: ItemMove<Player, MaterialType, LocationType>, _context?: PlayMoveContext): MaterialMove<Player, MaterialType, LocationType, RuleId>[] {
-    return []
+  protected afterItemMove(move: ItemMove<Player, MaterialType, LocationType>, context?: PlayMoveContext): MaterialMove<Player, MaterialType, LocationType, RuleId>[] {
+    return this.rulesStep?.afterItemMove(move, context) ?? []
   }
 
-  protected onCustomMove(_move: CustomMove, _context?: PlayMoveContext): MaterialMove<Player, MaterialType, LocationType, RuleId>[] {
-    return []
+  protected onCustomMove(move: CustomMove, context?: PlayMoveContext): MaterialMove<Player, MaterialType, LocationType, RuleId>[] {
+    return this.rulesStep?.onCustomMove(move, context) ?? []
   }
 
   private onPlayRulesMove(move: RuleMove<Player, RuleId>, context?: PlayMoveContext): MaterialMove<Player, MaterialType, LocationType, RuleId>[] {
