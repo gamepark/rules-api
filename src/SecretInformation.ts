@@ -1,3 +1,4 @@
+import { Action } from './Action'
 import { HiddenInformation } from './HiddenInformation'
 
 /**
@@ -44,6 +45,17 @@ export interface SecretInformation<GameView = any, Move = any, MoveView = any, P
    * @return true as long as the move must be kept secret from that player
    */
   keepMoveSecret?(move: Move, playerId: PlayerId): boolean
+
+  /**
+   * If some actions played must be entirely keep secret to other players, you can implement this function to prevent the action from being transmitted to
+   * another player as long as necessary.
+   * Useful for game with secret planning for instance.
+   *
+   * @param action An action played by a player
+   * @param playerId Identifier of another player
+   * @return true as long as the move must be kept secret from that player
+   */
+  keepActionSecret?(action: Action<Move, PlayerId>, playerId: PlayerId): boolean
 }
 
 /**
