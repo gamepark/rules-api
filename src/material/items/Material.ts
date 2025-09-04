@@ -1,8 +1,5 @@
-import isEqual from 'lodash/isEqual'
-import maxBy from 'lodash/maxBy'
-import minBy from 'lodash/minBy'
-import orderBy from 'lodash/orderBy'
-import sumBy from 'lodash/sumBy'
+import { isEqual, maxBy, minBy, sumBy } from 'es-toolkit'
+import { orderBy } from 'es-toolkit/compat'
 import { isSameLocationArea, Location } from '../location'
 import {
   CreateItem,

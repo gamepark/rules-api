@@ -1,5 +1,5 @@
+import { difference } from 'es-toolkit'
 import { EnumOption } from './EnumOption'
-import difference from 'lodash/difference'
 
 export type PlayerEnumOption<T = any> = EnumOption<T> & {
   mandatory?: (players: number) => T[]

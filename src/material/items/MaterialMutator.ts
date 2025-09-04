@@ -1,5 +1,4 @@
-import isEqual from 'lodash/isEqual'
-import merge from 'lodash/merge'
+import { isEqual, merge } from 'es-toolkit'
 import { isSameLocationArea, Location, LocationStrategy } from '../location'
 import {
   CreateItem,

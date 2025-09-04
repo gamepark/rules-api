@@ -1,7 +1,4 @@
-import difference from 'lodash/difference'
-import random from 'lodash/random'
-import shuffle from 'lodash/shuffle'
-import union from 'lodash/union'
+import { difference, random, shuffle, union } from 'es-toolkit'
 import { Action } from '../Action'
 import { RandomMove } from '../RandomMove'
 import { PlayMoveContext, Rules } from '../Rules'
@@ -301,9 +298,9 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
     const indexes = getItemMoveIndexes(move)
     if (context?.transient) {
       if (!this.game.transientItems) this.game.transientItems = {}
-      this.game.transientItems[move.itemType] = union(this.game.transientItems[move.itemType], indexes)
+      this.game.transientItems[move.itemType] = union(this.game.transientItems[move.itemType] ?? [], indexes)
     } else if (this.game.transientItems) {
-      this.game.transientItems[move.itemType] = difference(this.game.transientItems[move.itemType], indexes)
+      this.game.transientItems[move.itemType] = difference(this.game.transientItems[move.itemType] ?? [], indexes)
     }
     if (!context?.transient) {
       consequences.push(...this.afterItemMove(move, context))

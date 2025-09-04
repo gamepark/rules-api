@@ -1,8 +1,5 @@
-import forEachRight from 'lodash/forEachRight'
-import isEqual from 'lodash/isEqual'
-import keyBy from 'lodash/keyBy'
-import mapValues from 'lodash/mapValues'
-import sumBy from 'lodash/sumBy'
+import { forEachRight, isEqual, mapValues, sumBy } from 'es-toolkit'
+import { keyBy } from 'es-toolkit/compat'
 import { Location, Material, MaterialMove } from '../material'
 
 /**

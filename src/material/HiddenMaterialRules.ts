@@ -1,10 +1,5 @@
-import difference from 'lodash/difference'
-import get from 'lodash/get'
-import isEqual from 'lodash/isEqual'
-import keys from 'lodash/keys'
-import mapValues from 'lodash/mapValues'
-import set from 'lodash/set'
-import unset from 'lodash/unset'
+import { difference, isEqual, mapValues } from 'es-toolkit'
+import { get, keys, set, unset } from 'es-toolkit/compat'
 import { HiddenInformation } from '../HiddenInformation'
 import { PlayMoveContext } from '../Rules'
 import { MaterialItem } from './items'
@@ -114,8 +109,7 @@ export abstract class HiddenMaterialRules<P extends number = number, M extends n
   getView(player?: P): MaterialGame<P, M, L, R> {
     return {
       ...this.game,
-      items: mapValues(this.game.items, (items, stringType) => {
-        const itemsType = parseInt(stringType) as M
+      items: mapValues(this.game.items, (items, itemsType) => {
         const hidingStrategies = this.hidingStrategies[itemsType]
         if (!hidingStrategies || !items) return items
         return items.map(item => this.hideItem(itemsType, item, player))
