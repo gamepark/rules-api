@@ -2,14 +2,15 @@
   "name": "@gamepark/rules-api",
   "version": "7.0.0-beta.0",
   "description": "API to implement the rules of a board game",
+  "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "prepublishOnly": "tsc -p tsconfig.json"
+    "build": "tsc",
+    "prepublishOnly": "tsc"
   },
   "keywords": [
     "Game Park",
@@ -33,5 +34,5 @@
   "peerDependencies": {
     "es-toolkit": "^1.39.10"
   },
-  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
+  "packageManager": "yarn@4.9.4"
 }

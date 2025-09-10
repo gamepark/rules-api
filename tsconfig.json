@@ -2,10 +2,9 @@
   "compilerOptions": {
     "rootDir": "src",
     "outDir": "dist",
-    "module": "commonjs",
-    "target": "es5",
+    "module": "esnext",
+    "target": "esnext",
     "lib": [
-      "dom",
       "esnext"
     ],
     "moduleResolution": "node",
@@ -25,11 +24,6 @@
     "removeComments": false,
     "allowSyntheticDefaultImports": true
   },
-  "exclude": [
-    "node_modules",
-    "dist",
-    "__tests__",
-    "**/*.test*",
-    "**/*.spec*"
-  ]
+  "include": ["src"],
+  "exclude": ["**/*.test.ts"]
 }

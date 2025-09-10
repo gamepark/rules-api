@@ -1,5 +1,6 @@
 # npm dependencies
 /node_modules/
+.yarn/*
 
 # Build folder
 /dist/
