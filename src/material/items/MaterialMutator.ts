@@ -229,7 +229,7 @@ export class MaterialMutator<P extends number = number, M extends number = numbe
    * @return {MaterialItem} state of the item after the move is executed
    */
   getItemAfterMove(move: MoveItem<P, M, L>): MaterialItem<P, L> {
-    const item: MaterialItem<P, L> = this.getItemWithLocation(move.location, move.itemIndex)
+    const item: MaterialItem<P, L> = JSON.parse(JSON.stringify(this.getItemWithLocation(move.location, move.itemIndex)))
     if (move.reveal) {
       merge(item, move.reveal)
     }
@@ -248,7 +248,7 @@ export class MaterialMutator<P extends number = number, M extends number = numbe
    * @return {MaterialItem} state of the item after the move is executed
    */
   getItemAfterMoveAtOnce(move: MoveItemsAtOnce<P, M, L>, index: number): MaterialItem<P, L> {
-    const item: MaterialItem<P, L> = this.getItemWithLocation(move.location, index)
+    const item: MaterialItem<P, L> = JSON.parse(JSON.stringify(this.getItemWithLocation(move.location, index)))
     if (move.reveal && move.reveal[index]) {
       merge(item, move.reveal[index])
     }
