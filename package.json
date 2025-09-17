@@ -1,6 +1,6 @@
 {
   "name": "@gamepark/rules-api",
-  "version": "7.0.0-beta.1",
+  "version": "7.0.0-beta.2",
   "description": "API to implement the rules of a board game",
   "type": "module",
   "main": "dist/index.js",
@@ -10,10 +10,7 @@
   ],
   "scripts": {
     "build": "tsc",
-    "prepack": "yarn build",
-    "publish:patch": "yarn version patch --deferred && yarn version apply && yarn npm publish",
-    "publish:minor": "yarn version minor --deferred && yarn version apply && yarn npm publish",
-    "publish:major": "yarn version major --deferred && yarn version apply && yarn npm publish"
+    "prepack": "yarn build"
   },
   "keywords": [
     "Game Park",
