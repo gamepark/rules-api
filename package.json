@@ -10,7 +10,10 @@
   ],
   "scripts": {
     "build": "tsc",
-    "prepublishOnly": "tsc"
+    "prepack": "yarn build",
+    "publish:patch": "yarn version patch --deferred && yarn version apply && yarn npm publish",
+    "publish:minor": "yarn version minor --deferred && yarn version apply && yarn npm publish",
+    "publish:major": "yarn version major --deferred && yarn version apply && yarn npm publish"
   },
   "keywords": [
     "Game Park",
