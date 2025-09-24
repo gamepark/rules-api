@@ -1,4 +1,4 @@
-import { difference, random, shuffle, union } from 'es-toolkit'
+import { difference, randomInt, shuffle, union } from 'es-toolkit'
 import { Action } from '../Action'
 import { RandomMove } from '../RandomMove'
 import { PlayMoveContext, Rules } from '../Rules'
@@ -219,7 +219,7 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
    * @returns a random rolled value, by default a value between 0 and 5 (cubic dice result)
    */
   roll(_move: RollItem<Player, MaterialType, LocationType>) {
-    return random(5)
+    return randomInt(5)
   }
 
   /**
