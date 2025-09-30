@@ -1,3 +1,4 @@
+export * from './ChangeView'
 export * from './CloseTutorialPopup'
 export * from './DisplayHelp'
 export * from './DropItem'

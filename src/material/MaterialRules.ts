@@ -262,6 +262,10 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
             break
           case LocalMoveType.CloseTutorialPopup:
             this.game.tutorial!.popupClosed = true
+            break
+          case LocalMoveType.ChangeView:
+            this.game.view = move.view
+            break
         }
     }
 
