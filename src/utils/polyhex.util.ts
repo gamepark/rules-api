@@ -64,13 +64,17 @@ export class Polyhex<T = any> implements PolyhexConfig<T> {
    * @param onOverlap Callback function when a non-empty value is erased
    */
   merge(
-    polyhex: (T | undefined)[][],
+    polyhex: Polyhex,
     location: { x?: number, y?: number, rotation?: number } = {},
     onOverlap: (x: number, y: number) => void = () => {
     }) {
-    for (let y = 0; y < polyhex.length; y++) {
-      for (let x = 0; x < polyhex[y].length; x++) {
-        if (!this.isEmpty(polyhex[y][x])) {
+    if (polyhex.system !== this.system) {
+      throw new Error('Merging polyhex with different systems is not implemented yet')
+    }
+    for (let y = polyhex.yMin; y <= polyhex.yMax; y++) {
+      for (let x = polyhex.xMin; x <= polyhex.xMax; x++) {
+        const value = polyhex.getValue({ x, y })
+        if (!this.isEmpty(value)) {
           const rotatedCoordinates = hexRotate({ x, y }, location.rotation, this.system)
           const coordinates = hexTranslate(rotatedCoordinates, { x: location.x ?? 0, y: location.y ?? 0 }, this.system)
           while (coordinates.y < this.yMin) {
@@ -89,7 +93,7 @@ export class Polyhex<T = any> implements PolyhexConfig<T> {
           if (this.grid[coordinates.y - this.yMin][coordinates.x - this.xMin]) {
             onOverlap(x, y)
           }
-          this.grid[coordinates.y - this.yMin][coordinates.x - this.xMin] = polyhex[y][x]
+          this.grid[coordinates.y - this.yMin][coordinates.x - this.xMin] = value
         }
       }
     }
