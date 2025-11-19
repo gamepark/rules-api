@@ -10,7 +10,10 @@
   ],
   "scripts": {
     "build": "tsc",
-    "prepack": "yarn build"
+    "prepack": "yarn build",
+    "test": "vitest",
+    "test:watch": "vitest --watch",
+    "test:coverage": "vitest --coverage"
   },
   "keywords": [
     "Game Park",
@@ -23,13 +26,11 @@
     "access": "public"
   },
   "devDependencies": {
-    "@types/jest": "^30.0.0",
     "@types/node": "^24.5.1",
     "es-toolkit": "^1.39.10",
     "i18next": "^25.5.2",
-    "jest": "^30.1.3",
-    "ts-jest": "^29.4.2",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "vitest": "^4.0.10"
   },
   "peerDependencies": {
     "es-toolkit": "^1.39.10"
