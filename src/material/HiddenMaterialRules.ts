@@ -21,7 +21,7 @@ import {
   Shuffle,
   ShuffleRandomized
 } from './moves'
-import { HidingSecretsStrategy } from './SecretMaterialRules'
+import type { HidingSecretsStrategy, HidingStrategy } from './HidingStrategies'
 
 /**
  * Implement HiddenMaterialRules when you want to use the {@link MaterialRules} approach with {@link HiddenInformation}.
@@ -276,19 +276,3 @@ export abstract class HiddenMaterialRules<P extends number = number, M extends n
     return result
   }
 }
-
-/**
- * A Hiding Strategy is a function that takes an item and returns a list of path to hide in the item object.
- * See {@link hideItemId} and {@link hideFront} for 2 hiding strategy frequently used.
- */
-export type HidingStrategy<P extends number = number, L extends number = number> = (item: MaterialItem<P, L>) => string[]
-
-/**
- * Hiding strategy that removes the item id
- */
-export const hideItemId: HidingStrategy = () => ['id']
-
-/**
- * Hiding strategy that removes "id.front" from the item (when we have cards with composite ids, back & front)
- */
-export const hideFront: HidingStrategy = () => ['id.front']
