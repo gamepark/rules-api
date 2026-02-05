@@ -438,6 +438,7 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
   restoreTransientState(previousState: MaterialGame<Player, MaterialType, LocationType, RuleId>) {
     this.game.helpDisplay = previousState.helpDisplay
     this.game.transientItems = previousState.transientItems
+    this.game.view = previousState.view
     for (const type in previousState.transientItems) {
       previousState.transientItems[type]!.forEach(index => this.game.items[type]![index] = previousState.items[type]![index])
     }
