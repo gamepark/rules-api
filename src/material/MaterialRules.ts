@@ -12,6 +12,7 @@ import { GameMemory, PlayerMemory } from './memory'
 import {
   CustomMove,
   isEndGame,
+  isEndPlayerTurn,
   isRoll,
   isSelectItem,
   isShuffle,
@@ -397,12 +398,25 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
   }
 
   private actionBlocksUndo(action: Action<MaterialMove<Player, MaterialType, LocationType, RuleId>, Player>): boolean {
+    if (this.actionEndedSimultaneousPhase(action)) return true
     for (let i = action.consequences.length - 1; i >= 0; i--) {
       if (this.moveBlocksUndo(action.consequences[i], action.playerId)) {
         return true
       }
     }
     return this.moveBlocksUndo(action.move, action.playerId)
+  }
+
+  /**
+   * A player should never be able to undo an action that ended a simultaneous phase,
+   * because going back into a simultaneous phase after a rule change is not allowed.
+   */
+  private actionEndedSimultaneousPhase(action: Action<MaterialMove<Player, MaterialType, LocationType, RuleId>, Player>): boolean {
+    const { move, consequences } = action
+    const hasEndTurn = (isEndPlayerTurn(move) && move.player === action.playerId)
+      || consequences.some(c => isEndPlayerTurn(c) && c.player === action.playerId)
+    if (!hasEndTurn) return false
+    return consequences.some(c => c.kind === MoveKind.RulesMove && !isEndPlayerTurn(c))
   }
 
   private actionActivatesPlayer(action: Action<MaterialMove<Player, MaterialType, LocationType, RuleId>, Player>): boolean {
