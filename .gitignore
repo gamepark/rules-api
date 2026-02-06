@@ -1,13 +1,30 @@
-# npm dependencies
+# Dependencies
 /node_modules/
-.yarn/*
 
-# Build folder
+# Yarn (keep releases and plugins, ignore the rest)
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+
+# Build
 /dist/
 
-# IntelliJ files
+# IntelliJ
 /.idea/
 *.iml
 
-# TypeScript cache
+# TypeScript
 *.tsbuildinfo
+
+# OS files
+Thumbs.db
+Desktop.ini
+
+# Coverage
+/coverage/
+
+# Claude Code
+.claude/
