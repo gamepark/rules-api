@@ -33,9 +33,9 @@ export function isRoll<P extends number, M extends number, L extends number>(mov
  * @param type Item type to test
  * @returns a type guard similar as {@link isRoll} but that also verify the item type.
  */
-export function isRollItemType<P extends number, M extends number, L extends number>(
-  type: M
-): (move: MaterialMove<P, M, L>) => move is RollItem<P, M, L> {
-  return (move: MaterialMove<P, M, L>): move is RollItem<P, M, L> =>
+export function isRollItemType<T extends number>(
+  type: T
+): <P extends number, L extends number>(move: MaterialMove<P, number, L>) => move is RollItem<P, T, L> {
+  return <P extends number, L extends number>(move: MaterialMove<P, number, L>): move is RollItem<P, T, L> =>
     isRoll(move) && move.itemType === type
 }

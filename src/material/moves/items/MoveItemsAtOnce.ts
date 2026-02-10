@@ -37,9 +37,9 @@ export function isMoveItemsAtOnce<P extends number, M extends number, L extends 
  * @param type Item type to test
  * @returns a type guard similar as {@link isMoveItemsAtOnce} but that also verify the item type.
  */
-export function isMoveItemTypeAtOnce<P extends number, M extends number, L extends number>(
-  type: M
-): (move: MaterialMove<P, M, L>) => move is MoveItemsAtOnce<P, M, L> {
-  return (move: MaterialMove<P, M, L>): move is MoveItemsAtOnce<P, M, L> =>
+export function isMoveItemTypeAtOnce<T extends number>(
+  type: T
+): <P extends number, L extends number>(move: MaterialMove<P, number, L>) => move is MoveItemsAtOnce<P, T, L> {
+  return <P extends number, L extends number>(move: MaterialMove<P, number, L>): move is MoveItemsAtOnce<P, T, L> =>
     isMoveItemsAtOnce(move) && move.itemType === type
 }

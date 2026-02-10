@@ -31,9 +31,9 @@ export function isDeleteItem<P extends number, M extends number, L extends numbe
  * @param index Optional itemIndex to test along the item type
  * @returns a type guard similar as {@link isDeleteItem} but that also verify the item type.
  */
-export function isDeleteItemType<P extends number, M extends number, L extends number>(
-  type: M, index?: number
-): (move: MaterialMove<P, M, L>) => move is DeleteItem<M> {
-  return (move: MaterialMove<P, M, L>): move is DeleteItem<M> =>
+export function isDeleteItemType<T extends number>(
+  type: T, index?: number
+): <P extends number, L extends number>(move: MaterialMove<P, number, L>) => move is DeleteItem<T> {
+  return <P extends number, L extends number>(move: MaterialMove<P, number, L>): move is DeleteItem<T> =>
     isDeleteItem(move) && move.itemType === type && (index === undefined || move.itemIndex === index)
 }

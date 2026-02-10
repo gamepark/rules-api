@@ -37,10 +37,10 @@ export function isShuffle<P extends number, M extends number, L extends number>(
  * @param type Item type to test
  * @returns a type guard similar as {@link isShuffle} but that also verify the item type.
  */
-export function isShuffleItemType<P extends number, M extends number, L extends number>(
-  type: M
-): (move: MaterialMove<P, M, L>) => move is Shuffle<M> {
-  return (move: MaterialMove<P, M, L>): move is Shuffle<M> =>
+export function isShuffleItemType<T extends number>(
+  type: T
+): <P extends number, L extends number>(move: MaterialMove<P, number, L>) => move is Shuffle<T> {
+  return <P extends number, L extends number>(move: MaterialMove<P, number, L>): move is Shuffle<T> =>
     isShuffle(move) && move.itemType === type
 }
 

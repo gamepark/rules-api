@@ -38,9 +38,9 @@ export function isMoveItem<P extends number, M extends number, L extends number>
  * @param index Optional itemIndex to test along the item type
  * @returns a type guard similar as {@link isMoveItem} but that also verify the item type.
  */
-export function isMoveItemType<P extends number, M extends number, L extends number>(
-  type: M, index?: number
-): (move: MaterialMove<P, M, L>) => move is MoveItem<P, M, L> {
-  return (move: MaterialMove<P, M, L>): move is MoveItem<P, M, L> =>
+export function isMoveItemType<T extends number>(
+  type: T, index?: number
+): <P extends number, L extends number>(move: MaterialMove<P, number, L>) => move is MoveItem<P, T, L> {
+  return <P extends number, L extends number>(move: MaterialMove<P, number, L>): move is MoveItem<P, T, L> =>
     isMoveItem(move) && move.itemType === type && (index === undefined || move.itemIndex === index)
 }
