@@ -205,4 +205,9 @@ export type PlayMoveContext = {
    * True if the move will not be kept in the game's history
    */
   transient?: boolean
+
+  /**
+   * The player who initiated the action (used for interleaving during simultaneous phases)
+   */
+  player?: number
 }
