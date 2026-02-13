@@ -171,6 +171,9 @@ export class MaterialMutator<P extends number = number, M extends number = numbe
   private move(move: MoveItem<P, M, L>): void {
     const quantity = move.quantity ?? 1
     const sourceItem = this.items[move.itemIndex]
+    if (sourceItem.quantity === 0) {
+      throw new Error(`${this.rulesClassName}: cannot move item with index ${move.itemIndex} for type ${this.type}: item has quantity 0`)
+    }
     const itemAfterMove = this.getItemAfterMove(move)
     const mergeIndex = this.findMergeIndex(itemAfterMove)
     if (mergeIndex !== -1) {
@@ -263,7 +266,11 @@ export class MaterialMutator<P extends number = number, M extends number = numbe
   }
 
   private delete(move: DeleteItem<M>): void {
-    return this.removeItem(this.items[move.itemIndex]!, move.quantity)
+    const item = this.items[move.itemIndex]!
+    if (item.quantity === 0) {
+      throw new Error(`${this.rulesClassName}: cannot delete item with index ${move.itemIndex} for type ${this.type}: item has quantity 0`)
+    }
+    return this.removeItem(item, move.quantity)
   }
 
   private shuffle(move: Shuffle<M> | ShuffleRandomized<M>): void {
