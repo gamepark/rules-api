@@ -66,7 +66,7 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
    * the rule once and for all. If we want to create a "river" of card we can use a {@link FillGapStrategy}.
    * Games with more complex use cases can implement their own {@link LocationStrategy}.
    */
-  readonly locationsStrategies: Partial<Record<MaterialType, Partial<Record<LocationType, LocationStrategy<Player, MaterialType, LocationType>>>>> = {}
+  abstract readonly locationsStrategies: Partial<Record<MaterialType, Partial<Record<LocationType, LocationStrategy<Player, MaterialType, LocationType>>>>>
 
   /**
    * Helper function to manipulate the material items of the game. See {@link Material}.
