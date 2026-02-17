@@ -10,16 +10,18 @@ export function playAction<Game, Move, PlayerId>(rules: Rules<Game, Move, Player
 
   const action: Action<Move, PlayerId> = { playerId, move, consequences: [] }
 
-  const consequences = rules.play(JSON.parse(JSON.stringify(move)))
+  const context = { player: playerId as number }
+  const consequences = rules.play(JSON.parse(JSON.stringify(move)), context)
 
-  applyAutomaticMoves(rules, consequences, move => action.consequences.push(move))
+  applyAutomaticMoves(rules, consequences, move => action.consequences.push(move), context)
 
   return action
 }
 
 export function replayAction<Game, Move, PlayerId>(rules: Rules<Game, Move, PlayerId>, action: Action<Move, PlayerId>) {
-  rules.play(JSON.parse(JSON.stringify(action.move)))
-  action.consequences.forEach(move => rules.play(JSON.parse(JSON.stringify(move))))
+  const context = { player: action.playerId as number }
+  rules.play(JSON.parse(JSON.stringify(action.move)), context)
+  action.consequences.forEach(move => rules.play(JSON.parse(JSON.stringify(move)), context))
 }
 
 export function replayActions<Game, Move, PlayerId>(rules: Rules<Game, Move, PlayerId>, actions: Action<Move, PlayerId>[]) {

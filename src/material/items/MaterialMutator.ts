@@ -17,6 +17,19 @@ import {
 import { Material, MaterialItem } from './index'
 
 /**
+ * Context for interleaving item creation during simultaneous phases.
+ * Each player gets non-overlapping slots to ensure commutativity.
+ * availableIndexes lists all free indexes (tombstones with quantity===0) followed by items.length.
+ * The list is conceptually infinite: beyond stored entries, it continues sequentially.
+ * Player with rank r gets positions r, r+n, r+2n, ... in this list.
+ */
+export type SimultaneousContext = {
+  availableIndexes: number[]
+  playerRank: number
+  numPlayers: number
+}
+
+/**
  * Helper class to change the state of any {@link MaterialItem} in a game implemented with {@link MaterialRules}.
  *
  * @typeparam P - identifier of a player. Either a number or a numeric enum (eg: PlayerColor)
@@ -30,13 +43,15 @@ export class MaterialMutator<P extends number = number, M extends number = numbe
    * @param locationsStrategies The strategies that these items must follow
    * @param canMerge Whether to items at the exact same location can merge into one item with a quantity
    * @param rulesClassName Constructor name of the main rules class for logging
+   * @param simultaneousContext Optional context for interleaving during simultaneous phases
    */
   constructor(
     private readonly type: M,
     private readonly items: MaterialItem<P, L>[],
     private readonly locationsStrategies: Partial<Record<L, LocationStrategy<P, M, L>>> = {},
     private readonly canMerge: boolean = true,
-    private readonly rulesClassName: string = ''
+    private readonly rulesClassName: string = '',
+    private readonly simultaneousContext?: SimultaneousContext
   ) {
   }
 
@@ -94,11 +109,25 @@ export class MaterialMutator<P extends number = number, M extends number = numbe
 
   private addItem(item: MaterialItem<P, L>): void {
     this.applyAddItemStrategy(item)
-    const availableIndex = this.items.findIndex(item => item.quantity === 0)
-    if (availableIndex !== -1) {
-      this.items[availableIndex] = item
+    if (this.simultaneousContext) {
+      const { playerRank, numPlayers } = this.simultaneousContext
+      let k = 0
+      let targetIndex: number
+      do {
+        targetIndex = this.getAvailableIndex(playerRank + k * numPlayers)
+        k++
+      } while (targetIndex < this.items.length && this.items[targetIndex].quantity !== 0)
+      while (this.items.length <= targetIndex) {
+        this.items.push({ quantity: 0, location: {} as any })
+      }
+      this.items[targetIndex] = item
     } else {
-      this.items.push(item)
+      const availableIndex = this.items.findIndex(item => item.quantity === 0)
+      if (availableIndex !== -1) {
+        this.items[availableIndex] = item
+      } else {
+        this.items.push(item)
+      }
     }
   }
 
@@ -110,9 +139,25 @@ export class MaterialMutator<P extends number = number, M extends number = numbe
   getItemCreationIndex(newItem: MaterialItem<P, L>): number {
     const mergeIndex = this.findMergeIndex(newItem)
     if (mergeIndex !== -1) return mergeIndex
+    if (this.simultaneousContext) {
+      const { playerRank, numPlayers } = this.simultaneousContext
+      let k = 0
+      let targetIndex: number
+      do {
+        targetIndex = this.getAvailableIndex(playerRank + k * numPlayers)
+        k++
+      } while (targetIndex < this.items.length && this.items[targetIndex].quantity !== 0)
+      return targetIndex
+    }
     const availableIndex = this.items.findIndex(item => item.quantity === 0)
     if (availableIndex !== -1) return availableIndex
     return this.items.length
+  }
+
+  private getAvailableIndex(position: number): number {
+    const { availableIndexes } = this.simultaneousContext!
+    if (position < availableIndexes.length) return availableIndexes[position]
+    return availableIndexes[availableIndexes.length - 1] + (position - availableIndexes.length + 1)
   }
 
   private applyAddItemStrategy(item: MaterialItem<P, L>): void {

@@ -5,4 +5,8 @@ export type RuleStep<Player extends number = number, RuleId extends number = num
   id: RuleId
   player?: Player
   players?: Player[]
+  interleaving?: {
+    players: Player[]
+    availableIndexes: Record<number, number[]>
+  }
 }
