@@ -13,7 +13,8 @@
     "prepack": "yarn build",
     "test": "vitest",
     "test:watch": "vitest --watch",
-    "test:coverage": "vitest --coverage"
+    "test:coverage": "vitest --coverage",
+    "publish": "npm version ${0:-patch} && yarn npm publish && git push && git push --tags"
   },
   "keywords": [
     "Game Park",
