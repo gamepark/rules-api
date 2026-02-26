@@ -35,14 +35,15 @@ export function playActionWithViews<Game, View, Move, MoveView, PlayerId>(
   // Prepare action view for spectators
   actionWithView.views.push({ action: { id, playerId, move: getMoveView(rules, move), consequences: [] } })
 
-  const consequences = rules.play(JSON.parse(JSON.stringify(move)))
+  const context = { player: playerId as number }
+  const consequences = rules.play(JSON.parse(JSON.stringify(move)), context)
 
   applyAutomaticMoves(rules, consequences, move => {
     actionWithView.action.consequences.push(move)
     for (const view of actionWithView.views) {
       view.action.consequences.push(getMoveView(rules, move, view.recipient))
     }
-  })
+  }, context)
 
   return actionWithView
 }
