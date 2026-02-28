@@ -385,10 +385,20 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
         break
       case RuleMoveType.StartSimultaneousRule: {
         const players = move.players ?? this.game.players
+        const availableIndexes: Record<number, number[]> = {}
+        for (const type in this.game.items) {
+          const items = this.game.items[type]!
+          const available: number[] = []
+          for (let i = 0; i < items.length; i++) {
+            if (items[i].quantity === 0) available.push(i)
+          }
+          available.push(items.length)
+          availableIndexes[type] = available
+        }
         this.game.rule = {
           id: move.id,
           players: [...players],
-          interleaving: { players: [...players].sort((a, b) => a - b), availableIndexes: {} }
+          interleaving: { players: [...players].sort((a, b) => a - b), availableIndexes }
         }
         break
       }

@@ -337,6 +337,7 @@ class TestRules extends MaterialRules<number, TestMaterial, TestLocation, TestRu
     [TestRule.Simultaneous]: TestSimultaneousRule,
     [TestRule.PlayerTurn]: TestSimultaneousRule // placeholder
   }
+  locationsStrategies = {}
 }
 
 function createTestGame(players: number[]): TestGame {
@@ -357,6 +358,7 @@ describe('MaterialRules interleaving integration', () => {
     expect(game.rule).toBeDefined()
     expect(game.rule!.interleaving).toBeDefined()
     expect(game.rule!.interleaving!.players).toEqual([1, 2, 3])
+    // availableIndexes is empty when no items exist yet
     expect(game.rule!.interleaving!.availableIndexes).toEqual({})
   })
 
@@ -369,24 +371,24 @@ describe('MaterialRules interleaving integration', () => {
     expect(game.rule!.players).toEqual([3, 1]) // original order preserved
   })
 
-  it('should lazily initialize availableIndexes on first item creation', () => {
+  it('should eagerly initialize availableIndexes on StartSimultaneousRule', () => {
     const game = createTestGame([1, 2])
     game.items = { [TestMaterial.Card]: [{ location: { type: TestLocation.Board } }] }
     const rules = new TestRules(game)
     rules.play(startSimultaneous())
 
-    // availableIndexes should be empty initially
-    expect(game.rule!.interleaving!.availableIndexes).toEqual({})
+    // availableIndexes should be eagerly computed for existing types
+    expect(game.rule!.interleaving!.availableIndexes[TestMaterial.Card]).toEqual([1])
 
     // Create an item for player 1
     const createMove = createItemMove(TestMaterial.Card, { location: { type: TestLocation.Hand, player: 1 } })
     rules.play(createMove, { player: 1 })
 
-    // availableIndexes should list tombstones + array length (no tombstones here, so just [1])
+    // availableIndexes should remain the same (computed at phase start)
     expect(game.rule!.interleaving!.availableIndexes[TestMaterial.Card]).toEqual([1])
   })
 
-  it('should collect existing tombstones in availableIndexes', () => {
+  it('should collect existing tombstones in availableIndexes at phase start', () => {
     const game = createTestGame([1, 2])
     game.items = {
       [TestMaterial.Card]: [
@@ -398,12 +400,13 @@ describe('MaterialRules interleaving integration', () => {
     const rules = new TestRules(game)
     rules.play(startSimultaneous())
 
-    // Create an item to trigger lazy init
+    // Should have eagerly collected tombstones at 0 and 2, plus array length 3
+    expect(game.rule!.interleaving!.availableIndexes[TestMaterial.Card]).toEqual([0, 2, 3])
+
+    // Create an item for player 1
     const createMove = createItemMove(TestMaterial.Card, { location: { type: TestLocation.Hand, player: 1 } })
     rules.play(createMove, { player: 1 })
 
-    // Should have collected tombstones at 0 and 2, plus array length 3
-    expect(game.rule!.interleaving!.availableIndexes[TestMaterial.Card]).toEqual([0, 2, 3])
     // Player 1 (rank 0) should have used index 0 (first available for rank 0)
     expect(game.items[TestMaterial.Card]![0].location.player).toBe(1)
     expect(game.items[TestMaterial.Card]!.length).toBe(3) // no growth!
@@ -619,6 +622,70 @@ describe('Index efficiency with tombstone reuse', () => {
     expect(gameA.items[TestMaterial.Token]).toEqual(gameB.items[TestMaterial.Token])
     // Tombstones should have been reused, no array growth
     expect(gameA.items[TestMaterial.Token]!.length).toBe(4)
+  })
+})
+
+describe('Delete then create commutativity (production phase scenario)', () => {
+  it('should be commutative when players delete and create items in the same phase', () => {
+    // This test reproduces the bug where lazy availableIndexes initialization
+    // caused different indices depending on move order, because deletes during
+    // the phase created new tombstones that were picked up by lazy init.
+
+    const setupGame = () => {
+      const game = createTestGame([1, 2])
+      // Each player starts with 3 resource cubes
+      game.items = {
+        [TestMaterial.Token]: [
+          { location: { type: TestLocation.Board, player: 1 }, id: 1 },
+          { location: { type: TestLocation.Board, player: 1 }, id: 2 },
+          { location: { type: TestLocation.Board, player: 1 }, id: 3 },
+          { location: { type: TestLocation.Board, player: 2 }, id: 4 },
+          { location: { type: TestLocation.Board, player: 2 }, id: 5 },
+          { location: { type: TestLocation.Board, player: 2 }, id: 6 },
+        ]
+      }
+      const rules = new TestRules(game)
+      rules.play(startSimultaneous())
+      return { game, rules }
+    }
+
+    // Simulate: each player deletes 2 cubes then creates 1 cube (like producing resources)
+    const deleteP1_0: MaterialMove<number, TestMaterial, TestLocation, TestRule> = {
+      kind: MoveKind.ItemMove, type: ItemMoveType.Delete, itemType: TestMaterial.Token, itemIndex: 0
+    }
+    const deleteP1_1: MaterialMove<number, TestMaterial, TestLocation, TestRule> = {
+      kind: MoveKind.ItemMove, type: ItemMoveType.Delete, itemType: TestMaterial.Token, itemIndex: 1
+    }
+    const createP1 = createItemMove(TestMaterial.Token, { location: { type: TestLocation.Hand, player: 1 }, id: 100 })
+
+    const deleteP2_0: MaterialMove<number, TestMaterial, TestLocation, TestRule> = {
+      kind: MoveKind.ItemMove, type: ItemMoveType.Delete, itemType: TestMaterial.Token, itemIndex: 3
+    }
+    const deleteP2_1: MaterialMove<number, TestMaterial, TestLocation, TestRule> = {
+      kind: MoveKind.ItemMove, type: ItemMoveType.Delete, itemType: TestMaterial.Token, itemIndex: 4
+    }
+    const createP2 = createItemMove(TestMaterial.Token, { location: { type: TestLocation.Hand, player: 2 }, id: 200 })
+
+    // Order A: player 1 first
+    const { game: gameA, rules: rulesA } = setupGame()
+    rulesA.play(deleteP1_0, { player: 1 })
+    rulesA.play(deleteP1_1, { player: 1 })
+    rulesA.play(createP1, { player: 1 })
+    rulesA.play(deleteP2_0, { player: 2 })
+    rulesA.play(deleteP2_1, { player: 2 })
+    rulesA.play(createP2, { player: 2 })
+
+    // Order B: player 2 first
+    const { game: gameB, rules: rulesB } = setupGame()
+    rulesB.play(deleteP2_0, { player: 2 })
+    rulesB.play(deleteP2_1, { player: 2 })
+    rulesB.play(createP2, { player: 2 })
+    rulesB.play(deleteP1_0, { player: 1 })
+    rulesB.play(deleteP1_1, { player: 1 })
+    rulesB.play(createP1, { player: 1 })
+
+    // Must produce the same result regardless of order
+    expect(gameA.items[TestMaterial.Token]).toEqual(gameB.items[TestMaterial.Token])
   })
 })
 
