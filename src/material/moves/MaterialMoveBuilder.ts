@@ -1,6 +1,7 @@
 import { MaterialItem } from '../items'
 import { Location } from '../location'
 import {
+  ChangeView,
   CustomMove, DisplayHelp, DropItem,
   EndGame,
   EndPlayerTurn,
@@ -92,4 +93,10 @@ export namespace MaterialMoveBuilder {
   export function dropItemMove<M extends number = number>(type: M, index: number, displayIndex: number): DropItem<M> {
     return { kind: MoveKind.LocalMove, type: LocalMoveType.DropItem, item: { type, index, displayIndex } }
   }
+
+  /**
+   * Creates a {@link ChangeView} object
+   */
+  export const changeView = <View extends number = number>(view: View): ChangeView<View> =>
+    ({ kind: MoveKind.LocalMove, type: LocalMoveType.ChangeView, view })
 }
