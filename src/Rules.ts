@@ -186,6 +186,12 @@ export abstract class Rules<Game = any, Move = any, PlayerId = any> {
    * @returns true if the move cannot be predicted from the player point of view
    */
   isUnpredictableMove?(move: Move, player: PlayerId): boolean
+
+  /**
+   * Optional method to tell if a move must wait for all concurrent animations to complete before being played.
+   * See {@link SequentialMoves}
+   */
+  isSequentialMove?(move: Move): boolean
 }
 
 export interface RulesCreator<Game = any, Move = any, Player = number> {

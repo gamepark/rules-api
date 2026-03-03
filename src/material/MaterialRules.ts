@@ -4,6 +4,7 @@ import { RandomMove } from '../RandomMove'
 import { PlayMoveContext, Rules } from '../Rules'
 import { hasTimeLimit, TimeLimit } from '../TimeLimit'
 import { Undo } from '../Undo'
+import { SequentialMoves } from '../SequentialMove'
 import { UnpredictableMoves } from '../UnpredictableMove'
 import { Material, MaterialMutator, SimultaneousContext } from './items'
 import { LocationStrategy } from './location'
@@ -50,6 +51,7 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
   implements RandomMove<MaterialMove<Player, MaterialType, LocationType, RuleId>, MaterialMoveRandomized<Player, MaterialType, LocationType, RuleId>, Player>,
     Undo<MaterialGame<Player, MaterialType, LocationType, RuleId>, MaterialMove<Player, MaterialType, LocationType, RuleId>, Player>,
     UnpredictableMoves<MaterialMove<Player, MaterialType, LocationType, RuleId>>,
+    SequentialMoves<MaterialMove<Player, MaterialType, LocationType, RuleId>>,
     TimeLimit<MaterialGame<Player, MaterialType, LocationType, RuleId>, MaterialMove<Player, MaterialType, LocationType, RuleId>, Player> {
 
   /**
@@ -502,6 +504,18 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
   isUnpredictableMove(move: MaterialMove<Player, MaterialType, LocationType, RuleId>, _player: Player): boolean {
     if (this.game.rule?.interleaving && move.kind === MoveKind.RulesMove && move.type !== RuleMoveType.EndPlayerTurn) return true
     return isRoll(move)
+  }
+
+  /**
+   * Rule-changing moves must wait for all concurrent animations to complete before being played,
+   * because they recompute shared state (e.g. availableIndexes for interleaving).
+   * See {@link SequentialMoves.isSequentialMove}
+   *
+   * @param move Material move to consider
+   * @returns true if the move must wait for all other animations to complete
+   */
+  isSequentialMove(move: MaterialMove<Player, MaterialType, LocationType, RuleId>): boolean {
+    return move.kind === MoveKind.RulesMove && move.type !== RuleMoveType.EndPlayerTurn
   }
 
   /**
