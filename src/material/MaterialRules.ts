@@ -173,37 +173,24 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
    */
   mutator(type: MaterialType): MaterialMutator<Player, MaterialType, LocationType> {
     if (!this.game.items[type]) this.game.items[type] = []
-    return new MaterialMutator(type, this.game.items[type]!, this.locationsStrategies[type], this.itemsCanMerge(type))
-  }
-
-  /**
-   * Returns a mutator with interleaving context for a specific player during simultaneous phases.
-   * Outside simultaneous phases or without a player, falls back to the standard mutator.
-   */
-  mutatorForPlayer(type: MaterialType, player?: number): MaterialMutator<Player, MaterialType, LocationType> {
     const interleaving = this.game.rule?.interleaving
-    if (interleaving && player !== undefined) {
-      const playerRank = interleaving.players.indexOf(player as Player)
-      if (playerRank !== -1) {
-        if (!this.game.items[type]) this.game.items[type] = []
-        if (!(type in interleaving.availableIndexes)) {
-          const items = this.game.items[type]!
-          const available: number[] = []
-          for (let i = 0; i < items.length; i++) {
-            if (items[i].quantity === 0) available.push(i)
-          }
-          available.push(items.length)
-          interleaving.availableIndexes[type] = available
+    if (interleaving) {
+      if (!(type in interleaving.availableIndexes)) {
+        const items = this.game.items[type]!
+        const available: number[] = []
+        for (let i = 0; i < items.length; i++) {
+          if (items[i].quantity === 0) available.push(i)
         }
-        const simultaneousContext: SimultaneousContext = {
-          availableIndexes: interleaving.availableIndexes[type],
-          playerRank,
-          numPlayers: interleaving.players.length
-        }
-        return new MaterialMutator(type, this.game.items[type]!, this.locationsStrategies[type], this.itemsCanMerge(type), this.constructor.name, simultaneousContext)
+        available.push(items.length)
+        interleaving.availableIndexes[type] = available
       }
+      const simultaneousContext: SimultaneousContext = {
+        availableIndexes: interleaving.availableIndexes[type],
+        players: interleaving.players
+      }
+      return new MaterialMutator(type, this.game.items[type]!, this.locationsStrategies[type], this.itemsCanMerge(type), this.constructor.name, simultaneousContext)
     }
-    return this.mutator(type)
+    return new MaterialMutator(type, this.game.items[type]!, this.locationsStrategies[type], this.itemsCanMerge(type))
   }
 
   /**
@@ -313,8 +300,7 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
     if (!context?.transient) {
       consequences.push(...this.beforeItemMove(move, context))
     }
-    if (!this.game.items[move.itemType]) this.game.items[move.itemType] = []
-    const mutator = this.mutatorForPlayer(move.itemType, context?.player)
+    const mutator = this.mutator(move.itemType)
     mutator.applyMove(move)
     if (this.game.droppedItems) {
       this.game.droppedItems = this.game.droppedItems.filter((droppedItem) => {

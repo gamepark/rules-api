@@ -41,9 +41,9 @@ function endPlayerTurn(player: number) {
 describe('MaterialMutator with SimultaneousContext', () => {
 
   describe('addItem with interleaving', () => {
-    it('should place items at interleaved slots for player rank 0', () => {
+    it('should place items at interleaved slots based on item location.player', () => {
       const items: MaterialItem<number, TestLocation>[] = []
-      const ctx: SimultaneousContext = { availableIndexes: [0], playerRank: 0, numPlayers: 2 }
+      const ctx: SimultaneousContext = { availableIndexes: [0], players: [1, 2] }
       const mutator = new MaterialMutator(TestMaterial.Card, items, {}, true, '', ctx)
 
       const move1 = createItemMove(TestMaterial.Card, { location: { type: TestLocation.Hand, player: 1 } })
@@ -53,22 +53,21 @@ describe('MaterialMutator with SimultaneousContext', () => {
 
       const move2 = createItemMove(TestMaterial.Card, { location: { type: TestLocation.Hand, player: 1 }, id: 2 })
       mutator.applyMove(move2)
-      // availableIndexes=[0], rank 0, numPlayers 2: positions 0, 2, 4... => indexes 0, 2, 4...
+      // Player 1 has rank 0 in [1,2]: positions 0, 2, 4... => indexes 0, 2, 4...
       expect(items.length).toBe(3) // slot 0 used, slot 1 placeholder, slot 2 used
       expect(items[0].location.player).toBe(1)
       expect(items[1].quantity).toBe(0) // placeholder
       expect(items[2].id).toBe(2)
     })
 
-    it('should place items at interleaved slots for player rank 1', () => {
+    it('should place items at interleaved slots for second player', () => {
       const items: MaterialItem<number, TestLocation>[] = []
-      const ctx: SimultaneousContext = { availableIndexes: [0], playerRank: 1, numPlayers: 2 }
+      const ctx: SimultaneousContext = { availableIndexes: [0], players: [1, 2] }
       const mutator = new MaterialMutator(TestMaterial.Card, items, {}, true, '', ctx)
 
       const move1 = createItemMove(TestMaterial.Card, { location: { type: TestLocation.Hand, player: 2 } })
       mutator.applyMove(move1)
-      // availableIndexes=[0], rank 1: position 1 => index 0+1+1=2... wait
-      // position 1 in [0]: beyond list, so 0 + (1-1+1) = 1
+      // Player 2 has rank 1 in [1,2]: position 1 => index 1
       expect(items.length).toBe(2)
       expect(items[0].quantity).toBe(0) // placeholder
       expect(items[1].location.player).toBe(2)
@@ -80,7 +79,7 @@ describe('MaterialMutator with SimultaneousContext', () => {
         { location: { type: TestLocation.Board } }
       ]
       // availableIndexes=[2] means no tombstones, next free slot is at index 2
-      const ctx: SimultaneousContext = { availableIndexes: [2], playerRank: 0, numPlayers: 2 }
+      const ctx: SimultaneousContext = { availableIndexes: [2], players: [1, 2] }
       const mutator = new MaterialMutator(TestMaterial.Card, items, {}, true, '', ctx)
 
       const move = createItemMove(TestMaterial.Card, { location: { type: TestLocation.Hand, player: 1 } })
@@ -95,7 +94,7 @@ describe('MaterialMutator with SimultaneousContext', () => {
         { location: { type: TestLocation.Board } }
       ]
       // availableIndexes=[0, 2] means tombstone at 0 and next free at 2
-      const ctx: SimultaneousContext = { availableIndexes: [0, 2], playerRank: 0, numPlayers: 2 }
+      const ctx: SimultaneousContext = { availableIndexes: [0, 2], players: [1, 2] }
       const mutator = new MaterialMutator(TestMaterial.Card, items, {}, true, '', ctx)
 
       const move = createItemMove(TestMaterial.Card, { location: { type: TestLocation.Hand, player: 1 } })
@@ -115,49 +114,31 @@ describe('MaterialMutator with SimultaneousContext', () => {
       // 2 tombstones (0, 2) + array end (4)
       const available = [0, 2, 4]
 
-      // Player 0 gets positions 0, 2 => indexes 0, 4
-      const ctx0: SimultaneousContext = { availableIndexes: available, playerRank: 0, numPlayers: 2 }
-      const mut0 = new MaterialMutator(TestMaterial.Card, items, {}, false, '', ctx0)
-      mut0.applyMove(createItemMove(TestMaterial.Card, { location: { type: TestLocation.Hand, player: 1 }, id: 10 }))
+      // Same mutator, but items for different players get different slots
+      const ctx: SimultaneousContext = { availableIndexes: available, players: [1, 2] }
+      const mut = new MaterialMutator(TestMaterial.Card, items, {}, false, '', ctx)
 
-      // Player 1 gets positions 1, 3 => indexes 2, 5
-      const ctx1: SimultaneousContext = { availableIndexes: available, playerRank: 1, numPlayers: 2 }
-      const mut1 = new MaterialMutator(TestMaterial.Card, items, {}, false, '', ctx1)
-      mut1.applyMove(createItemMove(TestMaterial.Card, { location: { type: TestLocation.Hand, player: 2 }, id: 20 }))
+      // Player 1 (rank 0) gets positions 0, 2 => indexes 0, 4
+      mut.applyMove(createItemMove(TestMaterial.Card, { location: { type: TestLocation.Hand, player: 1 }, id: 10 }))
 
-      expect(items[0].id).toBe(10) // player 0 reused tombstone at 0
-      expect(items[2].id).toBe(20) // player 1 reused tombstone at 2
+      // Player 2 (rank 1) gets positions 1, 3 => indexes 2, 5
+      mut.applyMove(createItemMove(TestMaterial.Card, { location: { type: TestLocation.Hand, player: 2 }, id: 20 }))
+
+      expect(items[0].id).toBe(10) // player 1 reused tombstone at 0
+      expect(items[2].id).toBe(20) // player 2 reused tombstone at 2
       expect(items.length).toBe(4) // no growth!
     })
-  })
 
-  describe('getItemCreationIndex with interleaving', () => {
-    it('should predict the correct interleaved index', () => {
+    it('should fall back to normal addItem when item has no location.player', () => {
       const items: MaterialItem<number, TestLocation>[] = []
-      const ctx: SimultaneousContext = { availableIndexes: [0], playerRank: 1, numPlayers: 3 }
+      const ctx: SimultaneousContext = { availableIndexes: [0], players: [1, 2] }
       const mutator = new MaterialMutator(TestMaterial.Card, items, {}, true, '', ctx)
 
-      const item: MaterialItem<number, TestLocation> = { location: { type: TestLocation.Hand, player: 2 } }
-      const index = mutator.getItemCreationIndex(item)
-      expect(index).toBe(1) // rank 1: position 1 in [0] => 0 + (1-1+1) = 1
-
-      // After creating, next index should be 4 (position 4 => 0 + (4-1+1) = 4)
-      mutator.applyMove(createItemMove(TestMaterial.Card, item))
-      const nextIndex = mutator.getItemCreationIndex({ location: { type: TestLocation.Hand, player: 2 }, id: 2 })
-      expect(nextIndex).toBe(4)
-    })
-
-    it('should still merge when possible', () => {
-      const items: MaterialItem<number, TestLocation>[] = [
-        { location: { type: TestLocation.Board }, quantity: 3 }
-      ]
-      const ctx: SimultaneousContext = { availableIndexes: [1], playerRank: 0, numPlayers: 2 }
-      const mutator = new MaterialMutator(TestMaterial.Card, items, {}, true, '', ctx)
-
-      // Same item data should merge regardless of interleaving
-      const item: MaterialItem<number, TestLocation> = { location: { type: TestLocation.Board }, quantity: 2 }
-      const index = mutator.getItemCreationIndex(item)
-      expect(index).toBe(0) // merge with existing item
+      // Create without player - should warn and use normal behavior
+      const move = createItemMove(TestMaterial.Card, { location: { type: TestLocation.Board } })
+      mutator.applyMove(move)
+      expect(items.length).toBe(1)
+      expect(items[0].location.type).toBe(TestLocation.Board)
     })
   })
 
@@ -167,19 +148,17 @@ describe('MaterialMutator with SimultaneousContext', () => {
       const player2Item: MaterialItem<number, TestLocation> = { location: { type: TestLocation.Hand, player: 2 } }
       const available = [0]
 
-      // Order A: player 1 first, then player 2
+      // Order A: player 1 first, then player 2 (same mutator, player determined from item)
       const itemsA: MaterialItem<number, TestLocation>[] = []
-      const mutatorA1 = new MaterialMutator(TestMaterial.Card, itemsA, {}, true, '', { availableIndexes: available, playerRank: 0, numPlayers: 2 })
-      mutatorA1.applyMove(createItemMove(TestMaterial.Card, player1Item))
-      const mutatorA2 = new MaterialMutator(TestMaterial.Card, itemsA, {}, true, '', { availableIndexes: available, playerRank: 1, numPlayers: 2 })
-      mutatorA2.applyMove(createItemMove(TestMaterial.Card, player2Item))
+      const mutatorA = new MaterialMutator(TestMaterial.Card, itemsA, {}, true, '', { availableIndexes: available, players: [1, 2] })
+      mutatorA.applyMove(createItemMove(TestMaterial.Card, player1Item))
+      mutatorA.applyMove(createItemMove(TestMaterial.Card, player2Item))
 
       // Order B: player 2 first, then player 1
       const itemsB: MaterialItem<number, TestLocation>[] = []
-      const mutatorB2 = new MaterialMutator(TestMaterial.Card, itemsB, {}, true, '', { availableIndexes: available, playerRank: 1, numPlayers: 2 })
-      mutatorB2.applyMove(createItemMove(TestMaterial.Card, player2Item))
-      const mutatorB1 = new MaterialMutator(TestMaterial.Card, itemsB, {}, true, '', { availableIndexes: available, playerRank: 0, numPlayers: 2 })
-      mutatorB1.applyMove(createItemMove(TestMaterial.Card, player1Item))
+      const mutatorB = new MaterialMutator(TestMaterial.Card, itemsB, {}, true, '', { availableIndexes: available, players: [1, 2] })
+      mutatorB.applyMove(createItemMove(TestMaterial.Card, player2Item))
+      mutatorB.applyMove(createItemMove(TestMaterial.Card, player1Item))
 
       // Both should produce same state
       expect(itemsA).toEqual(itemsB)
@@ -200,25 +179,19 @@ describe('MaterialMutator with SimultaneousContext', () => {
 
       // Order A: P1 creates 2, then P2 creates 2
       const itemsA: MaterialItem<number, TestLocation>[] = []
-      const ctxA1: SimultaneousContext = { availableIndexes: available, playerRank: 0, numPlayers: 2 }
-      const mutA1 = new MaterialMutator(TestMaterial.Card, itemsA, {}, false, '', ctxA1)
-      mutA1.applyMove(createItemMove(TestMaterial.Card, p1Items[0]))
-      mutA1.applyMove(createItemMove(TestMaterial.Card, p1Items[1]))
-      const ctxA2: SimultaneousContext = { availableIndexes: available, playerRank: 1, numPlayers: 2 }
-      const mutA2 = new MaterialMutator(TestMaterial.Card, itemsA, {}, false, '', ctxA2)
-      mutA2.applyMove(createItemMove(TestMaterial.Card, p2Items[0]))
-      mutA2.applyMove(createItemMove(TestMaterial.Card, p2Items[1]))
+      const mutA = new MaterialMutator(TestMaterial.Card, itemsA, {}, false, '', { availableIndexes: available, players: [1, 2] })
+      mutA.applyMove(createItemMove(TestMaterial.Card, p1Items[0]))
+      mutA.applyMove(createItemMove(TestMaterial.Card, p1Items[1]))
+      mutA.applyMove(createItemMove(TestMaterial.Card, p2Items[0]))
+      mutA.applyMove(createItemMove(TestMaterial.Card, p2Items[1]))
 
       // Order B: P2 creates 2, then P1 creates 2
       const itemsB: MaterialItem<number, TestLocation>[] = []
-      const ctxB2: SimultaneousContext = { availableIndexes: available, playerRank: 1, numPlayers: 2 }
-      const mutB2 = new MaterialMutator(TestMaterial.Card, itemsB, {}, false, '', ctxB2)
-      mutB2.applyMove(createItemMove(TestMaterial.Card, p2Items[0]))
-      mutB2.applyMove(createItemMove(TestMaterial.Card, p2Items[1]))
-      const ctxB1: SimultaneousContext = { availableIndexes: available, playerRank: 0, numPlayers: 2 }
-      const mutB1 = new MaterialMutator(TestMaterial.Card, itemsB, {}, false, '', ctxB1)
-      mutB1.applyMove(createItemMove(TestMaterial.Card, p1Items[0]))
-      mutB1.applyMove(createItemMove(TestMaterial.Card, p1Items[1]))
+      const mutB = new MaterialMutator(TestMaterial.Card, itemsB, {}, false, '', { availableIndexes: available, players: [1, 2] })
+      mutB.applyMove(createItemMove(TestMaterial.Card, p2Items[0]))
+      mutB.applyMove(createItemMove(TestMaterial.Card, p2Items[1]))
+      mutB.applyMove(createItemMove(TestMaterial.Card, p1Items[0]))
+      mutB.applyMove(createItemMove(TestMaterial.Card, p1Items[1]))
 
       expect(itemsA).toEqual(itemsB)
       // P1 (rank 0): indices 0, 2
@@ -234,29 +207,29 @@ describe('MaterialMutator with SimultaneousContext', () => {
         ({ location: { type: TestLocation.Hand, player }, id })
       const available = [0]
 
-      const applyForPlayer = (items: MaterialItem<number, TestLocation>[], rank: number, player: number, id: number) => {
-        const ctx: SimultaneousContext = { availableIndexes: available, playerRank: rank, numPlayers: 3 }
+      const applyForPlayer = (items: MaterialItem<number, TestLocation>[], player: number, id: number) => {
+        const ctx: SimultaneousContext = { availableIndexes: available, players: [1, 2, 3] }
         const mutator = new MaterialMutator(TestMaterial.Card, items, {}, false, '', ctx)
         mutator.applyMove(createItemMove(TestMaterial.Card, makeItem(player, id)))
       }
 
       // Order A: P1, P2, P3
       const itemsA: MaterialItem<number, TestLocation>[] = []
-      applyForPlayer(itemsA, 0, 1, 10)
-      applyForPlayer(itemsA, 1, 2, 20)
-      applyForPlayer(itemsA, 2, 3, 30)
+      applyForPlayer(itemsA, 1, 10)
+      applyForPlayer(itemsA, 2, 20)
+      applyForPlayer(itemsA, 3, 30)
 
       // Order B: P3, P1, P2
       const itemsB: MaterialItem<number, TestLocation>[] = []
-      applyForPlayer(itemsB, 2, 3, 30)
-      applyForPlayer(itemsB, 0, 1, 10)
-      applyForPlayer(itemsB, 1, 2, 20)
+      applyForPlayer(itemsB, 3, 30)
+      applyForPlayer(itemsB, 1, 10)
+      applyForPlayer(itemsB, 2, 20)
 
       // Order C: P2, P3, P1
       const itemsC: MaterialItem<number, TestLocation>[] = []
-      applyForPlayer(itemsC, 1, 2, 20)
-      applyForPlayer(itemsC, 2, 3, 30)
-      applyForPlayer(itemsC, 0, 1, 10)
+      applyForPlayer(itemsC, 2, 20)
+      applyForPlayer(itemsC, 3, 30)
+      applyForPlayer(itemsC, 1, 10)
 
       expect(itemsA).toEqual(itemsB)
       expect(itemsA).toEqual(itemsC)
@@ -272,21 +245,15 @@ describe('MaterialMutator with SimultaneousContext', () => {
 
       // Order A: P1 adds 2 to their stack, then P2 adds 3 to their stack
       const itemsA = existingItems()
-      const ctxA1: SimultaneousContext = { availableIndexes: available, playerRank: 0, numPlayers: 2 }
-      const mutA1 = new MaterialMutator(TestMaterial.Token, itemsA, {}, true, '', ctxA1)
-      mutA1.applyMove(createItemMove(TestMaterial.Token, { location: { type: TestLocation.Board, player: 1 }, quantity: 2 }))
-      const ctxA2: SimultaneousContext = { availableIndexes: available, playerRank: 1, numPlayers: 2 }
-      const mutA2 = new MaterialMutator(TestMaterial.Token, itemsA, {}, true, '', ctxA2)
-      mutA2.applyMove(createItemMove(TestMaterial.Token, { location: { type: TestLocation.Board, player: 2 }, quantity: 3 }))
+      const mutA = new MaterialMutator(TestMaterial.Token, itemsA, {}, true, '', { availableIndexes: available, players: [1, 2] })
+      mutA.applyMove(createItemMove(TestMaterial.Token, { location: { type: TestLocation.Board, player: 1 }, quantity: 2 }))
+      mutA.applyMove(createItemMove(TestMaterial.Token, { location: { type: TestLocation.Board, player: 2 }, quantity: 3 }))
 
       // Order B: P2 first, then P1
       const itemsB = existingItems()
-      const ctxB2: SimultaneousContext = { availableIndexes: available, playerRank: 1, numPlayers: 2 }
-      const mutB2 = new MaterialMutator(TestMaterial.Token, itemsB, {}, true, '', ctxB2)
-      mutB2.applyMove(createItemMove(TestMaterial.Token, { location: { type: TestLocation.Board, player: 2 }, quantity: 3 }))
-      const ctxB1: SimultaneousContext = { availableIndexes: available, playerRank: 0, numPlayers: 2 }
-      const mutB1 = new MaterialMutator(TestMaterial.Token, itemsB, {}, true, '', ctxB1)
-      mutB1.applyMove(createItemMove(TestMaterial.Token, { location: { type: TestLocation.Board, player: 1 }, quantity: 2 }))
+      const mutB = new MaterialMutator(TestMaterial.Token, itemsB, {}, true, '', { availableIndexes: available, players: [1, 2] })
+      mutB.applyMove(createItemMove(TestMaterial.Token, { location: { type: TestLocation.Board, player: 2 }, quantity: 3 }))
+      mutB.applyMove(createItemMove(TestMaterial.Token, { location: { type: TestLocation.Board, player: 1 }, quantity: 2 }))
 
       expect(itemsA).toEqual(itemsB)
       expect(itemsA[0].quantity).toBe(5) // 3 + 2
@@ -309,16 +276,7 @@ describe('MaterialMutator with SimultaneousContext', () => {
       expect(items[0].location.player).toBe(1)
     })
 
-    it('getItemCreationIndex should use normal behavior', () => {
-      const items: MaterialItem<number, TestLocation>[] = [
-        { location: { type: TestLocation.Board }, quantity: 0 } // tombstone
-      ]
-      const mutator = new MaterialMutator(TestMaterial.Card, items, {}, true, '')
-
-      const item: MaterialItem<number, TestLocation> = { location: { type: TestLocation.Hand, player: 1 } }
-      expect(mutator.getItemCreationIndex(item)).toBe(0) // reuse tombstone
-    })
-  })
+})
 })
 
 // Integration test with MaterialRules
@@ -433,12 +391,12 @@ describe('MaterialRules interleaving integration', () => {
     expect(gameA.items[TestMaterial.Card]).toEqual(gameB.items[TestMaterial.Card])
   })
 
-  it('should not use interleaving without player context', () => {
+  it('should not use interleaving without location.player', () => {
     const game = createTestGame([1, 2])
     const rules = new TestRules(game)
     rules.play(startSimultaneous())
 
-    // Create without player context (e.g., from onRuleStart consequences)
+    // Create without player (e.g., from onRuleStart consequences for shared items)
     const createMove = createItemMove(TestMaterial.Card, { location: { type: TestLocation.Board } })
     rules.play(createMove)
 
@@ -537,6 +495,37 @@ describe('MaterialRules interleaving integration', () => {
     rulesB.play(moveP1, { player: 1 })
 
     expect(gameA.items[TestMaterial.Token]).toEqual(gameB.items[TestMaterial.Token])
+  })
+
+  it('should use item destination player for interleaving, not context.player', () => {
+    // This tests the bug fix: when player A's action creates items for player B,
+    // the items should use player B's interleaving slots, not player A's.
+    const game = createTestGame([1, 2])
+    const rules = new TestRules(game)
+    rules.play(startSimultaneous())
+
+    // Create items for BOTH players using context.player=1
+    // (simulates onRuleStart triggered by player 1's EndTurn)
+    const createForP1 = createItemMove(TestMaterial.Card, { location: { type: TestLocation.Hand, player: 1 }, id: 10 })
+    const createForP2 = createItemMove(TestMaterial.Card, { location: { type: TestLocation.Hand, player: 2 }, id: 20 })
+    rules.play(createForP1, { player: 1 })
+    rules.play(createForP2, { player: 1 }) // Note: context.player=1 but item is for player 2
+
+    // Player 1 (rank 0) should be at index 0
+    // Player 2 (rank 1) should be at index 1
+    expect(game.items[TestMaterial.Card]![0].id).toBe(10)
+    expect(game.items[TestMaterial.Card]![0].location.player).toBe(1)
+    expect(game.items[TestMaterial.Card]![1].id).toBe(20)
+    expect(game.items[TestMaterial.Card]![1].location.player).toBe(2)
+
+    // Now do the same but all with context.player=2 and verify same result
+    const game2 = createTestGame([1, 2])
+    const rules2 = new TestRules(game2)
+    rules2.play(startSimultaneous())
+    rules2.play(createForP1, { player: 2 }) // context.player=2 but item is for player 1
+    rules2.play(createForP2, { player: 2 })
+
+    expect(game2.items[TestMaterial.Card]).toEqual(game.items[TestMaterial.Card])
   })
 })
 

@@ -21,12 +21,11 @@ import { Material, MaterialItem } from './index'
  * Each player gets non-overlapping slots to ensure commutativity.
  * availableIndexes lists all free indexes (tombstones with quantity===0) followed by items.length.
  * The list is conceptually infinite: beyond stored entries, it continues sequentially.
- * Player with rank r gets positions r, r+n, r+2n, ... in this list.
+ * The player rank is derived from item.location.player at creation time.
  */
 export type SimultaneousContext = {
   availableIndexes: number[]
-  playerRank: number
-  numPlayers: number
+  players: number[]
 }
 
 /**
@@ -107,47 +106,73 @@ export class MaterialMutator<P extends number = number, M extends number = numbe
     return this.items.findIndex(({ quantity: q2, ...data2 }) => q1 !== 0 && q2 !== 0 && isEqual(data1, data2))
   }
 
-  private addItem(item: MaterialItem<P, L>): void {
+  /**
+   * Resolves the player rank for interleaving from the item's location.player.
+   * Falls back to fallbackPlayer (e.g. from the source item in a split move).
+   * Returns -1 if the player cannot be determined or is not part of the simultaneous phase.
+   */
+  private getPlayerRank(item: MaterialItem<P, L>, fallbackPlayer?: P): number {
+    const { players } = this.simultaneousContext!
+    const player = item.location?.player ?? fallbackPlayer
+    if (player === undefined) {
+      console.warn(`${this.rulesClassName}: creating an item without location.player during a simultaneous phase. Interleaving will not apply.`)
+      return -1
+    }
+    const rank = players.indexOf(player as number)
+    if (rank === -1) {
+      console.warn(`${this.rulesClassName}: creating an item for player ${player} who is not part of the simultaneous phase. Interleaving will not apply.`)
+    }
+    return rank
+  }
+
+  private addItem(item: MaterialItem<P, L>, fallbackPlayer?: P): void {
     this.applyAddItemStrategy(item)
     if (this.simultaneousContext) {
-      const { playerRank, numPlayers } = this.simultaneousContext
-      let k = 0
-      let targetIndex: number
-      do {
-        targetIndex = this.getAvailableIndex(playerRank + k * numPlayers)
-        k++
-      } while (targetIndex < this.items.length && this.items[targetIndex].quantity !== 0)
-      while (this.items.length <= targetIndex) {
-        this.items.push({ quantity: 0, location: {} as any })
+      const playerRank = this.getPlayerRank(item, fallbackPlayer)
+      if (playerRank !== -1) {
+        const numPlayers = this.simultaneousContext.players.length
+        let k = 0
+        let targetIndex: number
+        do {
+          targetIndex = this.getAvailableIndex(playerRank + k * numPlayers)
+          k++
+        } while (targetIndex < this.items.length && this.items[targetIndex].quantity !== 0)
+        while (this.items.length <= targetIndex) {
+          this.items.push({ quantity: 0, location: {} as any })
+        }
+        this.items[targetIndex] = item
+        return
       }
-      this.items[targetIndex] = item
+    }
+    const availableIndex = this.items.findIndex(item => item.quantity === 0)
+    if (availableIndex !== -1) {
+      this.items[availableIndex] = item
     } else {
-      const availableIndex = this.items.findIndex(item => item.quantity === 0)
-      if (availableIndex !== -1) {
-        this.items[availableIndex] = item
-      } else {
-        this.items.push(item)
-      }
+      this.items.push(item)
     }
   }
 
   /**
-   * Provides the index that the new item will have
-   * @param newItem An item that is going to be created
+   * Provides the index that a new item will have when created (or where a split item will land).
+   * @param newItem The item that is going to be created
+   * @param fallbackPlayer Optional fallback player for interleaving when item has no location.player
    * @returns {number} the future index of that item
    */
-  getItemCreationIndex(newItem: MaterialItem<P, L>): number {
+  getItemCreationIndex(newItem: MaterialItem<P, L>, fallbackPlayer?: P): number {
     const mergeIndex = this.findMergeIndex(newItem)
     if (mergeIndex !== -1) return mergeIndex
     if (this.simultaneousContext) {
-      const { playerRank, numPlayers } = this.simultaneousContext
-      let k = 0
-      let targetIndex: number
-      do {
-        targetIndex = this.getAvailableIndex(playerRank + k * numPlayers)
-        k++
-      } while (targetIndex < this.items.length && this.items[targetIndex].quantity !== 0)
-      return targetIndex
+      const playerRank = this.getPlayerRank(newItem, fallbackPlayer)
+      if (playerRank !== -1) {
+        const numPlayers = this.simultaneousContext.players.length
+        let k = 0
+        let targetIndex: number
+        do {
+          targetIndex = this.getAvailableIndex(playerRank + k * numPlayers)
+          k++
+        } while (targetIndex < this.items.length && this.items[targetIndex].quantity !== 0)
+        return targetIndex
+      }
     }
     const availableIndex = this.items.findIndex(item => item.quantity === 0)
     if (availableIndex !== -1) return availableIndex
@@ -231,7 +256,7 @@ export class MaterialMutator<P extends number = number, M extends number = numbe
       }
     } else if (sourceItem.quantity && sourceItem.quantity > quantity) {
       sourceItem.quantity -= quantity
-      this.addItem(itemAfterMove)
+      this.addItem(itemAfterMove, sourceItem.location?.player)
     } else {
       this.moveItem(sourceItem, itemAfterMove, move.itemIndex)
     }
