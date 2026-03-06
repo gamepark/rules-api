@@ -155,6 +155,13 @@ export class Material<P extends number = number, M extends number = number, L ex
   }
 
   /**
+   * @returns {boolean} true if there is at least one item
+   */
+  get exists(): boolean {
+    return this.entries.length > 0
+  }
+
+  /**
    * @returns {number} Sum of the quantity of all items
    */
   getQuantity(): number {
