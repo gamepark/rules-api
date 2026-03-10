@@ -6,10 +6,10 @@ import { MaterialMove } from './MaterialMove'
  * Often used for actions like saying "I pass" or conceptual actions specific to a game.
  * A custom move does nothing by default. You have to implement "onCustomMove" in {@link MaterialRulesPart} to memorize things of create consequences.
  */
-export type CustomMove<Type extends number = number> = {
+export type CustomMove<Type extends number = number, Data = any> = {
   kind: typeof MoveKind.CustomMove
   type: Type
-  data?: any
+  data?: Data
 }
 
 /**
@@ -29,8 +29,8 @@ export const isCustomMove = <T extends number = number, P extends number = numbe
  * @example
  * `if (isCustomMoveType(CustomMoveType.Pass)(move)) ...`
  */
-export function isCustomMoveType<T extends number = number, P extends number = number, M extends number = number, L extends number = number>(
+export function isCustomMoveType<T extends number = number, D = any, P extends number = number, M extends number = number, L extends number = number>(
   type: T
-): (move: MaterialMove<P, M, L>) => move is CustomMove<T> {
-  return (move: MaterialMove<P, M, L>): move is CustomMove<T> => isCustomMove(move) && move.type === type
+): (move: MaterialMove<P, M, L>) => move is CustomMove<T, D> {
+  return (move: MaterialMove<P, M, L>): move is CustomMove<T, D> => isCustomMove(move) && move.type === type
 }

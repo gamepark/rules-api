@@ -48,8 +48,8 @@ export namespace MaterialMoveBuilder {
   /**
    * Creates a {@link CustomMove} object
    */
-  export const customMove = <Type extends number = number, Data = any>(type: Type, data?: Data): CustomMove => {
-    const move: CustomMove = { kind: MoveKind.CustomMove, type }
+  export const customMove = <Type extends number = number, Data = any>(type: Type, data?: Data): CustomMove<Type, Data> => {
+    const move: CustomMove<Type, Data> = { kind: MoveKind.CustomMove, type }
     if (data !== undefined) move.data = data
     return move
   }
