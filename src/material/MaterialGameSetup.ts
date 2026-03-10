@@ -10,24 +10,24 @@ import { TutorialState } from './tutorial'
 /**
  * Helper class to implement {@link GameSetup} when using the {@link MaterialRules} approach.
  */
-export abstract class MaterialGameSetup<P extends number = number, M extends number = number, L extends number = number, Options = any, R extends number = number>
-  implements GameSetup<MaterialGame<P, M, L, R>, Options> {
+export abstract class MaterialGameSetup<P extends number = number, M extends number = number, L extends number = number, Options = any, R extends number = number, V extends number = number>
+  implements GameSetup<MaterialGame<P, M, L, R, V>, Options> {
 
   /**
    * The rules of the game
    */
-  abstract Rules: MaterialRulesCreator<P, M, L, R>
+  abstract Rules: MaterialRulesCreator<P, M, L, R, V>
 
   /**
    * The game setup state we are working on
    * @protected
    */
-  protected game: MaterialGame<P, M, L, R> = { players: [], items: {}, memory: {} }
+  protected game: MaterialGame<P, M, L, R, V> = { players: [], items: {}, memory: {} }
 
   /**
    * Get an instance of the rules of the game
    */
-  get rules(): MaterialRules<P, M, L, R> {
+  get rules(): MaterialRules<P, M, L, R, V> {
     return new this.Rules(this.game)
   }
 
@@ -37,7 +37,7 @@ export abstract class MaterialGameSetup<P extends number = number, M extends num
    * @param tutorial Initial tutorial state if any
    * @returns the initial state of the game
    */
-  setup(options: Options, tutorial?: TutorialState<P, M, L, R>): MaterialGame<P, M, L, R> {
+  setup(options: Options, tutorial?: TutorialState<P, M, L, R>): MaterialGame<P, M, L, R, V> {
     this.game = { players: getPlayerIds(options), items: {}, memory: {}, tutorial }
     this.setupMaterial(options)
     this.start(options)
@@ -68,7 +68,7 @@ export abstract class MaterialGameSetup<P extends number = number, M extends num
    * @param move The MaterialMove to play
    * @protected
    */
-  protected playMove(move: MaterialMove<P, M, L, R>) {
+  protected playMove(move: MaterialMove<P, M, L, R, V>) {
     if (hasRandomMove(this.rules)) {
       move = this.rules.randomize(move)
     }
