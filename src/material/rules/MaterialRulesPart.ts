@@ -10,8 +10,8 @@ import { RuleStep } from './RuleStep'
  * This is the base class to implement one part of the rules.
  * The constructor cannot be changed as the class is instantiated by {@link MaterialRules}.
  */
-export abstract class MaterialRulesPart<Player extends number = number, MaterialType extends number = number, LocationType extends number = number, RuleId extends number = number>
-  extends Rules<MaterialGame<Player, MaterialType, LocationType, RuleId>, MaterialMove<Player, MaterialType, LocationType, RuleId>, Player> {
+export abstract class MaterialRulesPart<Player extends number = number, MaterialType extends number = number, LocationType extends number = number, RuleId extends number = number, View extends number = number>
+  extends Rules<MaterialGame<Player, MaterialType, LocationType, RuleId, View>, MaterialMove<Player, MaterialType, LocationType, RuleId, View>, Player> {
 
   /**
    * Helper function to get a {@link Material} instance to work on some item type in the game.
@@ -28,7 +28,7 @@ export abstract class MaterialRulesPart<Player extends number = number, Material
    * @param _context Context of execution
    * @returns {MaterialMove[]} Any consequences that should automatically be played after the move
    */
-  beforeItemMove(_move: ItemMove<Player, MaterialType, LocationType>, _context?: PlayMoveContext): MaterialMove<Player, MaterialType, LocationType, RuleId>[] {
+  beforeItemMove(_move: ItemMove<Player, MaterialType, LocationType>, _context?: PlayMoveContext): MaterialMove<Player, MaterialType, LocationType, RuleId, View>[] {
     return []
   }
 
@@ -38,7 +38,7 @@ export abstract class MaterialRulesPart<Player extends number = number, Material
    * @param _context Context of execution
    * @returns {MaterialMove[]} Any consequences that should automatically be played after the move
    */
-  afterItemMove(_move: ItemMove<Player, MaterialType, LocationType>, _context?: PlayMoveContext): MaterialMove<Player, MaterialType, LocationType, RuleId>[] {
+  afterItemMove(_move: ItemMove<Player, MaterialType, LocationType>, _context?: PlayMoveContext): MaterialMove<Player, MaterialType, LocationType, RuleId, View>[] {
     return []
   }
 
@@ -49,7 +49,7 @@ export abstract class MaterialRulesPart<Player extends number = number, Material
    * @param _context Context of execution
    * @returns {MaterialMove[]} Any consequences that should automatically be played after the move
    */
-  onRuleStart(_move: RuleMove<Player, RuleId>, _previousRule?: RuleStep, _context?: PlayMoveContext): MaterialMove<Player, MaterialType, LocationType, RuleId>[] {
+  onRuleStart(_move: RuleMove<Player, RuleId>, _previousRule?: RuleStep, _context?: PlayMoveContext): MaterialMove<Player, MaterialType, LocationType, RuleId, View>[] {
     return []
   }
 
@@ -62,7 +62,7 @@ export abstract class MaterialRulesPart<Player extends number = number, Material
    * @param _context Context of execution
    * @returns {MaterialMove[]} Any consequences that should automatically be played after the move
    */
-  onRuleEnd(_move: RuleMove<Player, RuleId>, _context?: PlayMoveContext): MaterialMove<Player, MaterialType, LocationType, RuleId>[] {
+  onRuleEnd(_move: RuleMove<Player, RuleId>, _context?: PlayMoveContext): MaterialMove<Player, MaterialType, LocationType, RuleId, View>[] {
     return []
   }
 
@@ -72,7 +72,7 @@ export abstract class MaterialRulesPart<Player extends number = number, Material
    * @param _context Context of execution
    * @returns {MaterialMove[]} Any consequences that should automatically be played after the move
    */
-  onCustomMove(_move: CustomMove, _context?: PlayMoveContext): MaterialMove<Player, MaterialType, LocationType, RuleId>[] {
+  onCustomMove(_move: CustomMove, _context?: PlayMoveContext): MaterialMove<Player, MaterialType, LocationType, RuleId, View>[] {
     return []
   }
 
@@ -135,7 +135,7 @@ export abstract class MaterialRulesPart<Player extends number = number, Material
    * @deprecated because of the lifecycle of this method, the game state must never be modified inside it. However, it is a very common mistake, so
    * this method should not be used in the material rules parts: use {@link play} method to return the automatic moves.
    */
-  getAutomaticMoves(): MaterialMove<Player, MaterialType, LocationType, RuleId>[] {
+  getAutomaticMoves(): MaterialMove<Player, MaterialType, LocationType, RuleId, View>[] {
     return []
   }
 }
@@ -146,9 +146,10 @@ export abstract class MaterialRulesPart<Player extends number = number, Material
 export interface MaterialRulesPartCreator<Player extends number = number,
   MaterialType extends number = number,
   LocationType extends number = number,
-  RuleId extends number = number
+  RuleId extends number = number,
+  View extends number = number,
 > {
   new(
-    game: MaterialGame<Player, MaterialType, LocationType, RuleId>
-  ): MaterialRulesPart<Player, MaterialType, LocationType, RuleId>
+    game: MaterialGame<Player, MaterialType, LocationType, RuleId, View>
+  ): MaterialRulesPart<Player, MaterialType, LocationType, RuleId, View>
 }

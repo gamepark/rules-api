@@ -4,8 +4,8 @@ import { MaterialRulesPart } from './MaterialRulesPart'
 /**
  * Base class for any part of the rules where only one player has to do something.
  */
-export abstract class PlayerTurnRule<Player extends number = number, MaterialType extends number = number, LocationType extends number = number, RuleId extends number = number>
-  extends MaterialRulesPart<Player, MaterialType, LocationType, RuleId> {
+export abstract class PlayerTurnRule<Player extends number = number, MaterialType extends number = number, LocationType extends number = number, RuleId extends number = number, View extends number = number>
+  extends MaterialRulesPart<Player, MaterialType, LocationType, RuleId, View> {
 
   /**
    * Shortcut to get the awaited player (this.game.rule.player)
@@ -31,7 +31,7 @@ export abstract class PlayerTurnRule<Player extends number = number, MaterialTyp
   /**
    * See {@link Rules.getLegalMoves}
    */
-  getLegalMoves(player: Player): MaterialMove<Player, MaterialType, LocationType, RuleId>[] {
+  getLegalMoves(player: Player): MaterialMove<Player, MaterialType, LocationType, RuleId, View>[] {
     if (player !== this.getActivePlayer()) return []
     return this.getPlayerMoves()
   }
@@ -40,7 +40,7 @@ export abstract class PlayerTurnRule<Player extends number = number, MaterialTyp
    * Implement this to expose all the legal moves of the active player.
    * @returns All the {@link MaterialMove} that current active player can play
    */
-  getPlayerMoves(): MaterialMove<Player, MaterialType, LocationType, RuleId>[] {
+  getPlayerMoves(): MaterialMove<Player, MaterialType, LocationType, RuleId, View>[] {
     return []
   }
 }
