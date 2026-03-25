@@ -8,3 +8,4 @@ export type OptionsSpec<Options> =
   & { [key in keyof Omit<Options, 'players'>]: OptionSpecOf<Options[key]> }
   & { validate?: (options: Partial<Options>, t: TFunction) => void }
   & { subscriberRequired?: boolean }
+  & { competitivePlayers?: { min: number, max: number } }
