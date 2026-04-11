@@ -87,8 +87,8 @@ export class Polyhex<T = any> implements PolyhexConfig<T> {
             }
             this.xMin--
           }
-          if (!this.grid[coordinates.y - this.yMin]) {
-            this.grid[coordinates.y - this.yMin] = []
+          while (this.grid.length <= coordinates.y - this.yMin) {
+            this.grid.push([])
           }
           if (this.grid[coordinates.y - this.yMin][coordinates.x - this.xMin]) {
             onOverlap(x, y)
