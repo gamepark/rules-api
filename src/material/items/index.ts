@@ -1,4 +1,4 @@
-// Important: Material export must come first to prevent a circular file dependency issue (see https://stackoverflow.com/a/67261675/1581466)
+export { type ItemEntry } from './MaterialBase'
 export * from './Material'
 export * from './MaterialDeck'
 export * from './MaterialItem'

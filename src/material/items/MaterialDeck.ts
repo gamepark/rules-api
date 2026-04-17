@@ -1,10 +1,10 @@
 import { Location } from '../location'
 import { MoveItem } from '../moves'
-import { Material } from './index'
+import { MaterialBase } from './MaterialBase'
 import { MaterialItem } from './MaterialItem'
 
 /**
- * This subclass of {@link Material} is design to solve one major issue: when creating moves, the material items remains unchanged (Material is immutable),
+ * This subclass of {@link MaterialBase} is design to solve one major issue: when creating moves, the material items remains unchanged (Material is immutable),
  * so you cannot easily deal cards to multiple players at once: you will deal the first X cards all the time if you try to move items multiple time one
  * the same Material instance.
  *
@@ -23,7 +23,7 @@ import { MaterialItem } from './MaterialItem'
  * ]
  * ```
  */
-export class MaterialDeck<P extends number = number, M extends number = number, L extends number = number> extends Material<P, M, L> {
+export class MaterialDeck<P extends number = number, M extends number = number, L extends number = number> extends MaterialBase<P, M, L> {
   /**
    * Prepare moves that will change the location of the first X items AND mutate this MaterialDeck instance to remove the items that will move.
    *

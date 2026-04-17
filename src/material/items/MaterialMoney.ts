@@ -2,17 +2,17 @@ import { cloneDeep, isEqual, mapValues, sumBy } from 'es-toolkit'
 import { keyBy } from 'es-toolkit/compat'
 import { Location } from '../location'
 import { ItemMove } from '../moves'
-import { ItemEntry, Material } from './index'
+import { ItemEntry, MaterialBase } from './MaterialBase'
 import { MaterialItem } from './MaterialItem'
 import { MaterialMutator } from './MaterialMutator'
 
 /**
- * This subclass of {@link Material} is design to handle counting and moving Money with different units: coins of 5 and 1 for instance.
+ * This subclass of {@link MaterialBase} is design to handle counting and moving Money with different units: coins of 5 and 1 for instance.
  * It also keeps track of how much money is left after spending moves are create so that it is easy to spend money multiple time at once,
  * without risking spending the same coins twice because the moves are no immediately executed.
  */
 export class MaterialMoney<P extends number = number, M extends number = number, L extends number = number, Unit extends number = number>
-  extends Material<P, M, L> {
+  extends MaterialBase<P, M, L> {
   private pendingMoves: ItemMove<P, M, L>[] = []
 
   /**
