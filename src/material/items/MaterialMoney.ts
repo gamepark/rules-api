@@ -7,6 +7,26 @@ import { MaterialItem } from './MaterialItem'
 import { MaterialMutator } from './MaterialMutator'
 
 /**
+ * Option that controls preventive consolidation when gaining money.
+ * - `true`: always consolidate the gain.
+ * - predicate: consolidate only when it returns true. The predicate is evaluated against the items that *would* be
+ *   present at the location if the gain were performed without consolidation, and decides whether to use the
+ *   consolidated path instead.
+ */
+export type ConsolidateOption<P extends number = number, L extends number = number, Unit extends number = number> =
+  | boolean
+  | ((items: MaterialItem<P, L, Unit>[]) => boolean)
+
+/**
+ * In which order the moves of a consolidation are played, for instance with 1+1 gaining 1 and units 3 and 1:
+ * - `takeFirst` (default): the new coins are taken, then the surplus coins go back to the bank: create 3, delete 1+1.
+ * - `giveFirst`: the surplus coins go back to the bank, then the new coins are taken: delete 1+1, create 3.
+ * - `afterwards`: the gain is received as is, then the coins are converted: create 1, create 3, delete 1+1+1.
+ *   Only meaningful when gaining money.
+ */
+export type ConsolidationOrder = 'takeFirst' | 'giveFirst' | 'afterwards'
+
+/**
  * This subclass of {@link MaterialBase} is design to handle counting and moving Money with different units: coins of 5 and 1 for instance.
  * It also keeps track of how much money is left after spending moves are create so that it is easy to spend money multiple time at once,
  * without risking spending the same coins twice because the moves are no immediately executed.
@@ -67,14 +87,33 @@ export class MaterialMoney<P extends number = number, M extends number = number,
   }
 
   /**
-   * Create an amount of Money and put it in given location
+   * Create an amount of Money and put it in given location.
+   *
+   * When `consolidate` is set, the gain is *preventively* consolidated: instead of creating coins for the
+   * gained amount and then breaking lower-value coins back into a higher one, the moves are computed directly
+   * as deltas from the current state to the optimal distribution of (current + amount). Fewer moves, same final state.
    * @param amount Amount to gain
    * @param location The location to filter material onto, and to create new items in
+   * @param options Per-call options. `consolidate` triggers a preventive consolidation of the location during the gain.
+   *   When a predicate is given, it is evaluated against the items that *would* result from a non-consolidated gain.
+   *   `order` sets the order of the consolidation moves, see {@link ConsolidationOrder}.
    * @returns the moves that need to be played to perform the operation
    */
-  addMoney(amount: number, location: Location<P, L>): ItemMove<P, M, L>[] {
+  addMoney(amount: number, location: Location<P, L>,
+           options: { consolidate?: ConsolidateOption<P, L, Unit>, order?: ConsolidationOrder } = {}): ItemMove<P, M, L>[] {
     if (amount === 0) return []
     if (amount < 0) return this.removeMoney(-amount, location)
+    if (!this.shouldConsolidateOnGain(amount, location, options.consolidate)) {
+      return this.gainNaive(amount, location)
+    }
+    if (options.order === 'afterwards') {
+      return [...this.gainNaive(amount, location), ...this.consolidate(location)]
+    }
+    this.applyPendingMoves()
+    return this.redistribute(location, this.location(l => isEqual(l, location)).count + amount, options.order)
+  }
+
+  private gainNaive(amount: number, location: Location<P, L>): ItemMove<P, M, L>[] {
     const moves: ItemMove<P, M, L>[] = []
     const gainMap = this.getGainMap(amount)
     for (const unit of this.units) {
@@ -82,6 +121,21 @@ export class MaterialMoney<P extends number = number, M extends number = number,
         moves.push(this.createItem({ id: unit, location, quantity: gainMap[unit] }))
       }
     }
+    this.pendingMoves.push(...moves)
+    return moves
+  }
+
+  /**
+   * Replace the money at a location with the fewest items worth a total: the surplus coins are given back to the bank,
+   * and the missing coins are taken from it, in the given order. Pending moves must have been applied.
+   */
+  private redistribute(location: Location<P, L>, total: number, order: ConsolidationOrder = 'takeFirst'): ItemMove<P, M, L>[] {
+    const localMoney = this.location(l => isEqual(l, location))
+    const target = this.getGainMap(total)
+    const deltas = this.units.map(unit => [unit, target[unit] - localMoney.id(unit).getQuantity()] as const)
+    const give = deltas.filter(([, delta]) => delta < 0).map(([unit, delta]) => localMoney.id(unit).deleteItem(-delta))
+    const take = deltas.filter(([, delta]) => delta > 0).map(([unit, delta]) => localMoney.createItem({ id: unit, location, quantity: delta }))
+    const moves: ItemMove<P, M, L>[] = order === 'giveFirst' ? [...give, ...take] : [...take, ...give]
     this.pendingMoves.push(...moves)
     return moves
   }
@@ -113,7 +167,12 @@ export class MaterialMoney<P extends number = number, M extends number = number,
   }
 
   /**
-   * Move an amount of money from a place to another place. It searches after the easiest way to do it, making money with the bank only if necessary.
+   * Move an amount of money from a place to another place.
+   *
+   * The moves are always optimised: both origin and target end up in their canonical (highest-denomination-first)
+   * distribution, and any opportunity for a direct exchange between origin and target is taken before falling back
+   * on the bank. For example, if origin holds a single 5 and owes 2 to a target holding 3×1, origin gives the 5
+   * directly and the target returns 3×1, instead of breaking the 5 against the bank first.
    * @param origin Location to remove money from
    * @param target Location to move money to
    * @param amount Amount of money to transfer
@@ -126,43 +185,77 @@ export class MaterialMoney<P extends number = number, M extends number = number,
     const moves: ItemMove<P, M, L>[] = []
     const originMoney = this.location(l => isEqual(l, origin))
     const targetMoney = this.location(l => isEqual(l, target))
+
     const originDelta = originMoney.getSpendMap(amount)
-    const targetDelta = targetMoney.getGainMap(amount)
+    const newTargetDist = this.getGainMap(targetMoney.count + amount)
+    const targetDelta = mapValues(keyBy(this.units), (unit: Unit) => newTargetDist[unit] - targetMoney.id(unit).getQuantity())
+
+    // Direct exchanges between origin and target before resorting to the bank.
     for (const unit of this.units) {
-      if (originDelta[unit] < 0) {
-        while (targetDelta[unit] < -originDelta[unit]) { // try to make money for 1 unit with lower units
-          const lowerUnits = this.units.slice(this.units.indexOf(unit) + 1)
-          const targetResultDelta = targetMoney.getSpendMap(unit)
-          const valueSpent = sumBy(lowerUnits, unit => -targetResultDelta[unit] * unit)
-          if (valueSpent === unit && lowerUnits.every(lowerUnit => targetResultDelta[lowerUnit] < 0)) {
-            targetDelta[unit]++
-            for (const lowerUnit of lowerUnits) {
-              targetDelta[lowerUnit] += targetResultDelta[lowerUnit]
-            }
-          } else break
-        }
-        const moveAmount = Math.min(-originDelta[unit], targetDelta[unit])
-        targetDelta[unit] -= moveAmount
-        const originMaterialUnit = originMoney.id(unit)
-        if (moveAmount > 0) {
-          moves.push(originMaterialUnit.moveItem(target, moveAmount))
-        }
-        if (moveAmount < -originDelta[unit]) {
-          moves.push(originMaterialUnit.deleteItem(-originDelta[unit] - moveAmount))
-        }
-      } else if (originDelta[unit] > 0) {
-        if (targetDelta[unit] < 0) {
-          moves.push(targetMoney.id(unit).moveItem(origin, -targetDelta[unit]))
-        } else {
-          moves.push(originMoney.createItem({ id: unit, location: origin, quantity: originDelta[unit] }))
-        }
+      if (originDelta[unit] < 0 && targetDelta[unit] > 0) {
+        const transfer = Math.min(-originDelta[unit], targetDelta[unit])
+        moves.push(originMoney.id(unit).moveItem(target, transfer))
+        originDelta[unit] += transfer
+        targetDelta[unit] -= transfer
+      } else if (originDelta[unit] > 0 && targetDelta[unit] < 0) {
+        const transfer = Math.min(originDelta[unit], -targetDelta[unit])
+        moves.push(targetMoney.id(unit).moveItem(origin, transfer))
+        originDelta[unit] -= transfer
+        targetDelta[unit] += transfer
+      }
+    }
+
+    // Residuals balanced through the bank: change is taken before coins are given back.
+    for (const unit of this.units) {
+      if (originDelta[unit] > 0) {
+        moves.push(originMoney.createItem({ id: unit, location: origin, quantity: originDelta[unit] }))
       }
       if (targetDelta[unit] > 0) {
         moves.push(targetMoney.createItem({ id: unit, location: target, quantity: targetDelta[unit] }))
       }
     }
+    for (const unit of this.units) {
+      if (originDelta[unit] < 0) {
+        moves.push(originMoney.id(unit).deleteItem(-originDelta[unit]))
+      }
+      if (targetDelta[unit] < 0) {
+        moves.push(targetMoney.id(unit).deleteItem(-targetDelta[unit]))
+      }
+    }
+
     this.pendingMoves.push(...moves)
     return moves
+  }
+
+  /**
+   * Consolidate the money at a location: exchange lower-value coins for higher-value ones so that the location holds
+   * the minimum number of items for its total value. Useful to clean up a location after several gains have piled up.
+   * @param location The location to consolidate
+   * @param order `giveFirst` to delete the lower units before creating the higher ones (creates first by default)
+   * @returns the moves needed to consolidate (deletes for the lower units, creates for the higher units)
+   */
+  consolidate(location: Location<P, L>, order: Exclude<ConsolidationOrder, 'afterwards'> = 'takeFirst'): ItemMove<P, M, L>[] {
+    this.applyPendingMoves()
+    return this.redistribute(location, this.location(l => isEqual(l, location)).count, order)
+  }
+
+  private shouldConsolidateOnGain(amount: number, location: Location<P, L>, option: ConsolidateOption<P, L, Unit> | undefined): boolean {
+    if (!option) return false
+    if (option === true) return true
+    this.applyPendingMoves()
+    const items: MaterialItem<P, L, Unit>[] = this.location(l => isEqual(l, location)).getItems<Unit>().map(item => ({ ...item }))
+    const gainMap = this.getGainMap(amount)
+    for (const unit of this.units) {
+      const qty = gainMap[unit]
+      if (qty <= 0) continue
+      const existing = items.find(item => item.id === unit)
+      if (existing) {
+        existing.quantity = (existing.quantity ?? 1) + qty
+      } else {
+        items.push({ id: unit, location, quantity: qty })
+      }
+    }
+    return option(items)
   }
 
   /**
@@ -197,7 +290,7 @@ export class MaterialMoney<P extends number = number, M extends number = number,
             for (const lowerUnit of this.units.slice(i + 1)) {
               if (lowerUnit <= rest) {
                 map[lowerUnit] += Math.floor(rest / lowerUnit)
-                rest -= (rest % lowerUnit) * lowerUnit
+                rest %= lowerUnit
               }
             }
           }
