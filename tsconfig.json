@@ -7,7 +7,8 @@
     "lib": [
       "esnext"
     ],
-    "moduleResolution": "node",
+    "types": ["node"],
+    "moduleResolution": "bundler",
     "strict": true,
     "allowJs": false,
     "sourceMap": true,
