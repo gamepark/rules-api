@@ -244,6 +244,9 @@ export class MaterialMutator<P extends number = number, M extends number = numbe
     if (sourceItem.quantity === 0) {
       throw new Error(`${this.rulesClassName}: cannot move item with index ${move.itemIndex} for type ${this.type}: item has quantity 0`)
     }
+    if (move.quantity === undefined && (sourceItem.quantity ?? 1) > 1) {
+      console.error(`${this.rulesClassName}: moveItem called without a quantity on item with index ${move.itemIndex} for type ${this.type} that has a quantity of ${sourceItem.quantity}. Only 1 is moved for now, but this behavior will change to move the whole quantity.`)
+    }
     const itemAfterMove = this.getItemAfterMove(move)
     const mergeIndex = this.findMergeIndex(itemAfterMove)
     if (mergeIndex !== -1) {
@@ -339,6 +342,9 @@ export class MaterialMutator<P extends number = number, M extends number = numbe
     const item = this.items[move.itemIndex]!
     if (item.quantity === 0) {
       throw new Error(`${this.rulesClassName}: cannot delete item with index ${move.itemIndex} for type ${this.type}: item has quantity 0`)
+    }
+    if (move.quantity === undefined && (item.quantity ?? 1) > 1) {
+      console.error(`${this.rulesClassName}: deleteItem called without a quantity on item with index ${move.itemIndex} for type ${this.type} that has a quantity of ${item.quantity}. Only 1 is deleted for now, but this behavior will change to delete the whole quantity.`)
     }
     return this.removeItem(item, move.quantity)
   }
