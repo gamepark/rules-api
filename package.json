@@ -27,11 +27,11 @@
     "access": "public"
   },
   "devDependencies": {
-    "@types/node": "^25.6.0",
-    "es-toolkit": "^1.46.0",
-    "i18next": "^26.0.8",
+    "@types/node": "^26.0.1",
+    "es-toolkit": "^1.49.0",
+    "i18next": "^26.3.4",
     "typescript": "^6.0.3",
-    "vitest": "^4.1.5"
+    "vitest": "^4.1.9"
   },
   "peerDependencies": {
     "es-toolkit": "^1.46.0"
