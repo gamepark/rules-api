@@ -1,4 +1,4 @@
-import { TFunction } from 'i18next'
+import { TFunction } from './TFunction'
 
 export type Option = {
   label: (t: TFunction) => string

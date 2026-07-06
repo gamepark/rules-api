@@ -1,4 +1,4 @@
-import { TFunction } from 'i18next'
+import { TFunction } from './TFunction'
 import { OptionSpecOf } from './OptionSpecOf'
 import { WithPlayerOptionsSpec } from './WithPlayerOptionsSpec'
 import { WithPlayersOptions } from './WithPlayersOptions'
