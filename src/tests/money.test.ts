@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { Money } from '../utils'
 
-const value = (money: Money, delta: Record<number, number>): number =>
+const value = (_money: Money, delta: Record<number, number>): number =>
   Object.entries(delta).reduce((sum, [unit, count]) => sum + Number(unit) * count, 0)
 
 describe('money.util', () => {

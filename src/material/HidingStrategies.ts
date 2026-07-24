@@ -38,6 +38,6 @@ export const hideItemIdToOthers = <P extends number = number, L extends number =
  * @param item The item to hide information from
  * @param player The player to hide information to (or the spectator)
  */
-export const hideFrontToOthers: HidingStrategy = <P extends number = number, L extends number = number>(
+export const hideFrontToOthers: HidingSecretsStrategy = <P extends number = number, L extends number = number>(
   item: MaterialItem<P, L>, player?: P
 ): string[] => item.location.player === player ? [] : ['id.front']
