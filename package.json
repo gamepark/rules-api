@@ -14,6 +14,7 @@
     "test": "vitest",
     "test:watch": "vitest --watch",
     "test:coverage": "vitest run --coverage",
+    "typecheck:test": "tsc -p tsconfig.test.json",
     "publish": "npm version ${0:-patch} && yarn npm publish && git push && git push --tags"
   },
   "keywords": [
