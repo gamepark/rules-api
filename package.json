@@ -13,7 +13,7 @@
     "prepack": "yarn build",
     "test": "vitest",
     "test:watch": "vitest --watch",
-    "test:coverage": "vitest --coverage",
+    "test:coverage": "vitest run --coverage",
     "publish": "npm version ${0:-patch} && yarn npm publish && git push && git push --tags"
   },
   "keywords": [
@@ -28,9 +28,10 @@
   },
   "devDependencies": {
     "@types/node": "^26.0.1",
+    "@vitest/coverage-v8": "^4.1.9",
     "es-toolkit": "^1.49.0",
     "typescript": "^6.0.3",
-    "vitest": "^4.1.9"
+    "vitest": "4.1.10"
   },
   "peerDependencies": {
     "es-toolkit": "^1.46.0"
