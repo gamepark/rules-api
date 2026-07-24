@@ -22,7 +22,7 @@ export function listingToList<T extends number>(listing: Partial<Record<T, numbe
  * @returns the listing matching the list
  */
 export function listToListing<T extends number>(list: T[]): Partial<Record<T, number>> {
-  const listing: Partial<Record<T, number>> = []
+  const listing: Partial<Record<T, number>> = {}
   for (const t of list) {
     t in listing ? listing[t]!++ : listing[t] = 1
   }

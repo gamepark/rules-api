@@ -19,17 +19,20 @@ describe('listing.util', () => {
 
   describe('listToListing', () => {
     it('should count duplicates', () => {
-      // listToListing returns an array-like structure indexed by value
-      expect({ ...listToListing([1, 1, 3]) }).toEqual({ 1: 2, 3: 1 })
+      expect(listToListing([1, 1, 3])).toEqual({ 1: 2, 3: 1 })
+    })
+
+    it('should return a plain object, not an array', () => {
+      expect(Array.isArray(listToListing([1, 1, 3]))).toBe(false)
     })
 
     it('should return an empty listing for an empty list', () => {
-      expect({ ...listToListing([]) }).toEqual({})
+      expect(listToListing([])).toEqual({})
     })
   })
 
   it('should round-trip a listing through a list', () => {
     const listing = { 1: 3, 2: 1, 5: 2 }
-    expect({ ...listToListing(listingToList(listing)) }).toEqual(listing)
+    expect(listToListing(listingToList(listing))).toEqual(listing)
   })
 })
