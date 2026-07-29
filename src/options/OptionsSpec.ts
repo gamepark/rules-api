@@ -7,5 +7,15 @@ export type OptionsSpec<Options> =
   (Options extends WithPlayersOptions<infer P> ? WithPlayerOptionsSpec<P> : {})
   & { [key in keyof Omit<Options, 'players'>]: OptionSpecOf<Options[key]> }
   & { validate?: (options: Partial<Options>, t: TFunction) => void }
-  & { subscriberRequired?: boolean }
-  & { competitivePlayers?: { min: number, max: number } }
+  & {
+    /**
+     * @deprecated Moved to the platform database — see `Option.subscriberRequired`.
+     */
+    subscriberRequired?: boolean
+  }
+  & {
+    /**
+     * @deprecated Moved to the platform database — see `Option.subscriberRequired`.
+     */
+    competitivePlayers?: { min: number, max: number }
+  }
