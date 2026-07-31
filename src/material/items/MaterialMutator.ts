@@ -207,7 +207,7 @@ export class MaterialMutator<P extends number = number, M extends number = numbe
     }
   }
 
-  private removeItem(item: MaterialItem<P, L>, quantity: number = 1) {
+  private removeItem(item: MaterialItem<P, L>, quantity: number) {
     item.quantity = Math.max(0, (item.quantity ?? 1) - quantity)
     if (item.quantity === 0) {
       this.applyRemoveItemStrategy(item)
@@ -239,14 +239,11 @@ export class MaterialMutator<P extends number = number, M extends number = numbe
   }
 
   private move(move: MoveItem<P, M, L>): void {
-    const quantity = move.quantity ?? 1
     const sourceItem = this.items[move.itemIndex]
     if (sourceItem.quantity === 0) {
       throw new Error(`${this.rulesClassName}: cannot move item with index ${move.itemIndex} for type ${this.type}: item has quantity 0`)
     }
-    if (move.quantity === undefined && (sourceItem.quantity ?? 1) > 1) {
-      console.error(`${this.rulesClassName}: moveItem called without a quantity on item with index ${move.itemIndex} for type ${this.type} that has a quantity of ${sourceItem.quantity}. Only 1 is moved for now, but this behavior will change to move the whole quantity.`)
-    }
+    const quantity = move.quantity ?? sourceItem.quantity ?? 1
     const itemAfterMove = this.getItemAfterMove(move)
     const mergeIndex = this.findMergeIndex(itemAfterMove)
     if (mergeIndex !== -1) {
@@ -309,10 +306,8 @@ export class MaterialMutator<P extends number = number, M extends number = numbe
     if (move.reveal) {
       merge(item, move.reveal)
     }
-    if (move.quantity) {
+    if (move.quantity !== undefined) {
       item.quantity = move.quantity
-    } else {
-      delete item.quantity
     }
     return item
   }
@@ -343,10 +338,7 @@ export class MaterialMutator<P extends number = number, M extends number = numbe
     if (item.quantity === 0) {
       throw new Error(`${this.rulesClassName}: cannot delete item with index ${move.itemIndex} for type ${this.type}: item has quantity 0`)
     }
-    if (move.quantity === undefined && (item.quantity ?? 1) > 1) {
-      console.error(`${this.rulesClassName}: deleteItem called without a quantity on item with index ${move.itemIndex} for type ${this.type} that has a quantity of ${item.quantity}. Only 1 is deleted for now, but this behavior will change to delete the whole quantity.`)
-    }
-    return this.removeItem(item, move.quantity)
+    return this.removeItem(item, move.quantity ?? Infinity)
   }
 
   private shuffle(move: Shuffle<M> | ShuffleRandomized<M>): void {

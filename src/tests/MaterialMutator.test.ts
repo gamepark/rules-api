@@ -109,6 +109,24 @@ describe('MaterialMutator (non-simultaneous)', () => {
       expect(items[1].quantity).toBe(1)
     })
 
+    it('should move the whole quantity when the move has none', () => {
+      const items: Item[] = [{ location: { type: L.Deck }, id: 5, quantity: 3 }]
+      mutator(items).applyMove(move(0, { type: L.Hand, player: 1 }))
+      expect(items).toHaveLength(1)
+      expect(items[0].location.type).toBe(L.Hand)
+      expect(items[0].quantity).toBe(3)
+    })
+
+    it('should move the whole quantity into an identical item at the destination', () => {
+      const items: Item[] = [
+        { location: { type: L.Deck }, id: 9, quantity: 3 },
+        { location: { type: L.Hand, player: 1 }, id: 9, quantity: 2 }
+      ]
+      mutator(items).applyMove(move(0, { type: L.Hand, player: 1 }))
+      expect(items[0].quantity).toBe(0) // source becomes a tombstone
+      expect(items[1].quantity).toBe(5)
+    })
+
     it('should merge into an identical item at the destination', () => {
       const items: Item[] = [
         { location: { type: L.Board }, id: 9 },
@@ -149,6 +167,12 @@ describe('MaterialMutator (non-simultaneous)', () => {
   describe('delete', () => {
     it('should turn an item into a tombstone', () => {
       const items: Item[] = [{ location: { type: L.Board }, id: 1 }]
+      mutator(items).applyMove(del(0))
+      expect(items[0].quantity).toBe(0)
+    })
+
+    it('should delete the whole quantity when no quantity is given', () => {
+      const items: Item[] = [{ location: { type: L.Board }, id: 1, quantity: 5 }]
       mutator(items).applyMove(del(0))
       expect(items[0].quantity).toBe(0)
     })
@@ -290,10 +314,10 @@ describe('MaterialMutator (non-simultaneous)', () => {
       expect(after.location.type).toBe(L.Hand)
     })
 
-    it('should drop the quantity when the move has none', () => {
+    it('should keep the whole quantity when the move has none', () => {
       const items: Item[] = [{ location: { type: L.Deck }, id: 1, quantity: 5 }]
       const after = mutator(items).getItemAfterMove(move(0, { type: L.Hand }))
-      expect(after.quantity).toBeUndefined()
+      expect(after.quantity).toBe(5)
     })
   })
 
