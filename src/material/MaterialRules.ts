@@ -365,7 +365,7 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
   }
 
   private changeRule(move: RuleMove<Player, RuleId>, context?: PlayMoveContext): MaterialMove<Player, MaterialType, LocationType, RuleId, View>[] {
-    const moves = this.rulesStep?.onRuleEnd(move, context) ?? []
+    this.rulesStep?.onRuleEnd(move, context)
     const rule = this.game.rule
     switch (move.type) {
       case RuleMoveType.StartPlayerTurn:
@@ -397,7 +397,7 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
         delete this.game.rule
         break
     }
-    return moves.concat(this.rulesStep?.onRuleStart(move, rule, context) ?? [])
+    return this.rulesStep?.onRuleStart(move, rule, context) ?? []
   }
 
   /**

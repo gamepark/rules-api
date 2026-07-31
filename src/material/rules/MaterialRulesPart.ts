@@ -56,14 +56,12 @@ export abstract class MaterialRulesPart<Player extends number = number, Material
   /**
    * This function is called just before a {@link RuleMove} that leave this rules step is played.
    *
-   * BEWARE: any consequences returned here will happen inside the next rule step. Usually we only clean the memory here.
+   * BEWARE: it cannot trigger any consequence. Usually we only clean the memory here.
    *
    * @param _move The move which is going to be played
    * @param _context Context of execution
-   * @returns {MaterialMove[]} Any consequences that should automatically be played after the move
    */
-  onRuleEnd(_move: RuleMove<Player, RuleId>, _context?: PlayMoveContext): MaterialMove<Player, MaterialType, LocationType, RuleId, View>[] {
-    return []
+  onRuleEnd(_move: RuleMove<Player, RuleId>, _context?: PlayMoveContext): void {
   }
 
   /**

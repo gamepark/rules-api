@@ -70,7 +70,7 @@ MaterialGame {
 - `beforeItemMove(move)` - Hook before item moves
 - `afterItemMove(move)` - Hook after item moves
 - `onRuleStart(move)` - Called when this rule begins
-- `onRuleEnd(move)` - Called when this rule ends
+- `onRuleEnd(move)` - Called when this rule ends (no consequences, returns void)
 - `onCustomMove(move)` - Handle custom game-specific moves
 
 **`Material<Player, MaterialType, LocationType>`** - Immutable item manipulation helper

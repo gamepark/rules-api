@@ -30,7 +30,7 @@ const hooks = {
   beforeItemMove: (_m: any, _c?: any) => [] as Move[],
   afterItemMove: (_m: any, _c?: any) => [] as Move[],
   onRuleStart: (_m: any, _prev?: any, _c?: any) => [] as Move[],
-  onRuleEnd: (_m: any, _c?: any) => [] as Move[],
+  onRuleEnd: (_m: any, _c?: any): void => {},
   onCustomMove: (_m: any, _c?: any) => [] as Move[],
   getActivePlayerLegalMoves: (_p: number) => [] as Move[],
   onPlayerTurnEnd: (_m: any, _c?: any) => [] as Move[],
@@ -42,7 +42,7 @@ beforeEach(() => {
   hooks.beforeItemMove = () => []
   hooks.afterItemMove = () => []
   hooks.onRuleStart = () => []
-  hooks.onRuleEnd = () => []
+  hooks.onRuleEnd = () => {}
   hooks.onCustomMove = () => []
   hooks.getActivePlayerLegalMoves = () => []
   hooks.onPlayerTurnEnd = () => []
@@ -280,16 +280,22 @@ describe('MaterialRules', () => {
   })
 
   describe('play - rule changes', () => {
-    it('should start a player turn and run onRuleStart/onRuleEnd', () => {
+    it('should start a player turn and run onRuleEnd then onRuleStart', () => {
       const started = customMove(1)
-      const ended = customMove(2)
-      hooks.onRuleStart = () => [started]
-      hooks.onRuleEnd = () => [ended]
+      const calls: string[] = []
+      hooks.onRuleStart = () => {
+        calls.push('start')
+        return [started]
+      }
+      hooks.onRuleEnd = () => {
+        calls.push('end')
+      }
       const game = makeGame({ id: R.Turn, player: 1 })
       const rules = new TestRules(game)
       const consequences = rules.play(startPlayerTurn(R.Other, 2))
       expect(game.rule).toEqual({ id: R.Other, player: 2 })
-      expect(consequences).toEqual([ended, started]) // onRuleEnd first, then onRuleStart
+      expect(calls).toEqual(['end', 'start']) // onRuleEnd first, then onRuleStart
+      expect(consequences).toEqual([started])
     })
 
     it('should start a rule keeping the previous player', () => {
