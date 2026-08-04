@@ -28,9 +28,9 @@
     "access": "public"
   },
   "devDependencies": {
-    "@types/node": "^26.0.1",
-    "@vitest/coverage-v8": "^4.1.9",
-    "es-toolkit": "^1.49.0",
+    "@types/node": "^26.1.2",
+    "@vitest/coverage-v8": "^4.1.10",
+    "es-toolkit": "^1.50.0",
     "typescript": "^7.0.2",
     "vitest": "4.1.10"
   },
