@@ -54,6 +54,10 @@ describe('options', () => {
       expect(isWithPlayerOptions({} as any)).toBe(false)
     })
 
+    it('should not take a v2 player count range for player options', () => {
+      expect(isWithPlayerOptions({ specVersion: 2, players: { min: 2, max: 4 } } as any)).toBe(false)
+    })
+
     it('should detect a spec with a player id option', () => {
       expect(isWithPlayerIdOptions({ players: { id: colorOption() } } as any)).toBe(true)
       expect(isWithPlayerIdOptions({ players: { color: colorOption() } } as any)).toBe(false) // no id
