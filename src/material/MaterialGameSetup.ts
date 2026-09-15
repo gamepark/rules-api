@@ -33,12 +33,12 @@ export abstract class MaterialGameSetup<P extends number = number, M extends num
 
   /**
    * Entry point for {@link GameSetup}
-   * @param options Options of the game
+   * @param options Options of the game, recorded in the game state as {@link MaterialGame.options}
    * @param tutorial Initial tutorial state if any
    * @returns the initial state of the game
    */
   setup(options: Options, tutorial?: TutorialState<P, M, L, R>): MaterialGame<P, M, L, R, V> {
-    this.game = { players: getPlayerIds(options), items: {}, memory: {}, tutorial }
+    this.game = { players: getPlayerIds(options), items: {}, memory: {}, options: JSON.parse(JSON.stringify(options)), tutorial }
     this.setupMaterial(options)
     this.start(options)
     return this.game

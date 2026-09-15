@@ -83,6 +83,14 @@ describe('MaterialGameSetup', () => {
       expect(game.rule).toEqual({ id: R.Play, player: 2 })
     })
 
+    it('should record a copy of the options in the game state', () => {
+      const options = { players: [{ id: 5 }, { id: 6 }], variant: true }
+      const game = new Setup().setup(options)
+      expect(game.options).toEqual(options)
+      options.variant = false
+      expect(game.options.variant).toBe(true)
+    })
+
     it('should store the initial tutorial state', () => {
       const tutorial: any = { step: 0 }
       const game = new Setup().setup({ players: 2 }, tutorial)
