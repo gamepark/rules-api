@@ -81,7 +81,15 @@ export type IdentityValue =
     }
 
 /** An identity is unique by construction: it is what links a user to a player. */
-export type IdentitiesSpec = { values: IdentityValue[] }
+export type IdentitiesSpec = {
+  values: IdentityValue[]
+  /**
+   * Other options that must all hold one of the given values for the game to have identities at all.
+   * When they do not, no identity is assigned and players are numbered, as in a game declaring none —
+   * unlike every value being filtered out, which is a table the game cannot seat.
+   */
+  requires?: OptionRequirement[]
+}
 
 /**
  * Teams are the only structural constraint on the table size itself: a table that

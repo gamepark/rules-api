@@ -445,6 +445,16 @@ function shuffle<T>(items: T[], random: Random): T[] {
 /* ------------------------------------------------------- identities & teams */
 
 /**
+ * Whether players hold identities at all under this assignment.
+ *
+ * An identity can be a mode rather than a constant of the game: picking one's faction may be a friendly
+ * variant, the faction being dealt at the table otherwise. Without identities, players are numbered.
+ */
+export function hasIdentities(spec: OptionsSpecV2, resolved: ResolvedOptions = {}): boolean {
+  return !!spec.identities && requirementsHold(spec.identities.requires, resolved)
+}
+
+/**
  * Identities that exist at this table size, under this assignment.
  *
  * Same two axes as an option value (§4), and the same reason a form needs it as
@@ -452,8 +462,9 @@ function shuffle<T>(items: T[], random: Random): T[] {
  * choice the player cannot act on.
  */
 export function availableIdentities(spec: OptionsSpecV2, playerCount: number, resolved: ResolvedOptions = {}): OptionValue[] {
-  return (spec.identities?.values ?? [])
-    .map((value) => (typeof value === 'object' ? value : { value }))
+  if (!hasIdentities(spec, resolved)) return []
+  return spec
+    .identities!.values.map((value) => (typeof value === 'object' ? value : { value }))
     .filter((value) => inRange(value.playerCount, playerCount) && requirementsHold(value.requires, resolved))
     .map((value) => value.value)
 }
@@ -474,8 +485,8 @@ export function assignIdentities(
   playerCount: number,
   resolved: ResolvedOptions = {}
 ): { identities: OptionValue[]; issues: OptionsIssue[] } | null {
-  if (!spec.identities) return null
-  const values = spec.identities.values.map((value) => (typeof value === 'object' ? value : { value }))
+  if (!hasIdentities(spec, resolved)) return null
+  const values = spec.identities!.values.map((value) => (typeof value === 'object' ? value : { value }))
   const available = availableIdentities(spec, playerCount, resolved)
   const availableSet = new Set(available.map(optionValueKey))
   const mandatory = values.filter((value) => value.required && availableSet.has(optionValueKey(value.value))).map((value) => value.value)

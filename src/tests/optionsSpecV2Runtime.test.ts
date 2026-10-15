@@ -1,4 +1,20 @@
-import { assignIdentities, assignTeams, availableValues, isOptionAvailable, legalPlayerCounts, optionOrder, OptionsSelection, OptionsSpecV2, optionValueSpecs, resolveOptions, validateOptions } from '../options'
+import {
+  assignIdentities,
+  assignTeams,
+  availableIdentities,
+  availableValues,
+  createGameOptions,
+  hasIdentities,
+  isOptionAvailable,
+  legalPlayerCounts,
+  optionOrder,
+  OptionsSelection,
+  OptionsSpecV2,
+  optionValueSpecs,
+  PlayerOptions,
+  resolveOptions,
+  validateOptions
+} from '../options'
 import { describe, expect, test } from 'vitest'
 
 /**
@@ -458,6 +474,32 @@ describe('identities', () => {
 
   test('a game with no identities has none to assign', () => {
     expect(assignIdentities(spec({}), [null, null], 2)).toBeNull()
+  })
+
+  describe('identities gated by an option', () => {
+    // Skyrift: players pick their deck in a friendly variant, and are dealt two to choose from otherwise.
+    const skyrift = spec({
+      players: { min: 2, max: 2 },
+      options: { selection: { kind: 'enum', values: ['draft', 'free'] } },
+      identities: { requires: [{ option: 'selection', values: ['free'] }], values: [1, 2, 3, 4] }
+    })
+
+    test('are assigned when the option holds', () => {
+      expect(hasIdentities(skyrift, { selection: 'free' })).toBe(true)
+      expect(assignIdentities(skyrift, [3, null], 2, { selection: 'free' })!.identities[0]).toBe(3)
+    })
+
+    test('do not exist otherwise, which is not a table too small for them', () => {
+      expect(hasIdentities(skyrift, { selection: 'draft' })).toBe(false)
+      expect(availableIdentities(skyrift, 2, { selection: 'draft' })).toEqual([])
+      expect(assignIdentities(skyrift, [3, null], 2, { selection: 'draft' })).toBeNull()
+    })
+
+    test('leave players numbered in the options a game receives', () => {
+      expect(createGameOptions(skyrift, { selection: 'draft' }, 2, { id: [3, null] }).players).toBe(2)
+      const players = createGameOptions(skyrift, { selection: 'free' }, 2, { id: [3, null] }).players as PlayerOptions[]
+      expect(players[0].id).toBe(3)
+    })
   })
 })
 

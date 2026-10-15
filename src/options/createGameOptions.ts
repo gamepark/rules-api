@@ -2,6 +2,7 @@ import { OptionsSpecV2, OptionValue } from './OptionsSpecV2'
 import {
   assignIdentities,
   assignTeams,
+  hasIdentities,
   OptionsIssue,
   OptionsSelection,
   ResolvedOptions,
@@ -54,10 +55,11 @@ export function createGameOptions(
  * otherwise — the exact shape every game's `setup` already reads.
  */
 function playerOptions(spec: OptionsSpecV2, playerCount: number, resolved: ResolvedOptions, preferences: IdentityPreferences): number | PlayerOptions[] {
-  if (!spec.identities && !spec.teams) return playerCount
+  // `resolved` matters: identities, or a single one, can be gated by an option's value.
+  const identities = hasIdentities(spec, resolved)
+  if (!identities && !spec.teams) return playerCount
   const players: PlayerOptions[] = [...Array(playerCount)].map(() => ({}))
-  if (spec.identities) {
-    // `resolved` matters: an identity can be gated by an option's value.
+  if (identities) {
     const assignment = assignIdentities(spec, preferences.id ?? [], playerCount, resolved)!
     if (assignment.issues.length) throw optionsError(assignment.issues)
     assignment.identities.forEach((identity, index) => (players[index].id = identity))
