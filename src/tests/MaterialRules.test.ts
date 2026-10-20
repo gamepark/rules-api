@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { Action } from '../Action'
 import {
+  HelpDisplayType,
+  HelpHistory,
   ItemMoveType,
   MaterialGame,
   MaterialMove,
@@ -12,7 +14,7 @@ import {
   SimultaneousRule
 } from '../material'
 
-const { startPlayerTurn, startSimultaneousRule, startRule, endPlayerTurn, customMove, endGame, displayHelp, changeView, dropItemMove } =
+const { startPlayerTurn, startSimultaneousRule, startRule, endPlayerTurn, customMove, endGame, displayHelp, displayPreviousHelp, changeView, dropItemMove } =
   MaterialMoveBuilder
 
 enum M { Card = 1, Token = 2 }
@@ -264,6 +266,71 @@ describe('MaterialRules', () => {
       const help: any = { type: 0, itemType: M.Card, item: {} }
       new TestRules(game).play(displayHelp(help) as any)
       expect(game.helpDisplay).toEqual(help)
+    })
+
+    describe('help history', () => {
+      const rulesHelp: any = { type: HelpDisplayType.Rules, ruleId: R.Turn }
+      const card = (id: number): any => ({ type: HelpDisplayType.Material, itemType: M.Card, item: { id } })
+
+      it('should not keep any history for a help displayed first', () => {
+        const game = makeGame({ id: R.Turn })
+        new TestRules(game).play(displayHelp(rulesHelp) as any)
+        expect(game.helpHistory).toBeUndefined()
+      })
+
+      it('should keep the help displayed when another help is displayed over it', () => {
+        const game = makeGame({ id: R.Turn })
+        const rules = new TestRules(game)
+        rules.play(displayHelp(rulesHelp) as any)
+        rules.play(displayHelp(card(1)) as any)
+        expect(game.helpDisplay).toEqual(card(1))
+        expect(game.helpHistory).toEqual([rulesHelp])
+      })
+
+      it('should replace the help displayed without changing the history', () => {
+        const game = makeGame({ id: R.Turn })
+        const rules = new TestRules(game)
+        rules.play(displayHelp(rulesHelp) as any)
+        rules.play(displayHelp(card(1)) as any)
+        rules.play(displayHelp(card(2), HelpHistory.Replace) as any)
+        expect(game.helpDisplay).toEqual(card(2))
+        expect(game.helpHistory).toEqual([rulesHelp])
+      })
+
+      it('should go back to the helps kept in history, the last one first', () => {
+        const game = makeGame({ id: R.Turn })
+        const rules = new TestRules(game)
+        rules.play(displayHelp(rulesHelp) as any)
+        rules.play(displayHelp(card(1)) as any)
+        rules.play(displayHelp(card(2)) as any)
+        rules.play(displayPreviousHelp() as any)
+        expect(game.helpDisplay).toEqual(card(1))
+        expect(game.helpHistory).toEqual([rulesHelp])
+        rules.play(displayPreviousHelp() as any)
+        expect(game.helpDisplay).toEqual(rulesHelp)
+        expect(game.helpHistory).toBeUndefined()
+      })
+
+      it('should clear the history when the help dialog is closed', () => {
+        const game = makeGame({ id: R.Turn })
+        const rules = new TestRules(game)
+        rules.play(displayHelp(rulesHelp) as any)
+        rules.play(displayHelp(card(1)) as any)
+        rules.play(displayHelp(undefined) as any)
+        expect(game.helpDisplay).toBeUndefined()
+        expect(game.helpHistory).toBeUndefined()
+      })
+
+      it('should restore the history with the transient state', () => {
+        const previous = makeGame({ id: R.Turn })
+        const previousRules = new TestRules(previous)
+        previousRules.play(displayHelp(rulesHelp) as any)
+        previousRules.play(displayHelp(card(1)) as any)
+        const game = makeGame({ id: R.Turn })
+        new TestRules(game).restoreTransientState(previous)
+        expect(game.helpDisplay).toEqual(card(1))
+        expect(game.helpHistory).toEqual([rulesHelp])
+      })
     })
 
     it('should change the view', () => {

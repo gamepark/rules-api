@@ -46,10 +46,30 @@ export type RulesHelpDisplay<RuleId extends number = number> = {
 }
 
 /**
- * Move object to display a help dialog
+ * What becomes of the help dialog already displayed when a {@link DisplayHelp} move is played
+ */
+export enum HelpHistory {
+  /**
+   * The help displayed is kept in {@link MaterialGame.helpHistory}, so that the player can go back to it.
+   * This is the default when a help is displayed over another one, for instance from a button inside a help.
+   */
+  Keep = 1,
+  /**
+   * The help displayed is replaced, the history is left unchanged: for instance to browse similar items.
+   */
+  Replace,
+  /**
+   * The last help kept in history is displayed again and removed from history. The helpDisplay of the move is ignored.
+   */
+  Back
+}
+
+/**
+ * Move object to display a help dialog. Without helpDisplay, the help dialog is closed and its history is cleared.
  */
 export type DisplayHelp<P extends number = number, M extends number = number, L extends number = number, R extends number = number, I = any> = {
   kind: MoveKind.LocalMove
   type: typeof LocalMoveType.DisplayHelp
   helpDisplay?: HelpDisplay<P, M, L, R, I>
+  history?: HelpHistory
 }
