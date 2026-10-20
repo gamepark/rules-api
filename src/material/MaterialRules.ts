@@ -492,7 +492,7 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
       delete this.game.helpDisplay
       delete this.game.helpHistory
     } else {
-      if (this.game.helpDisplay && move.history !== HelpHistory.Replace) {
+      if (this.game.helpDisplay && move.history === HelpHistory.Keep) {
         this.updateHelpHistory([...history, this.game.helpDisplay])
       }
       this.game.helpDisplay = move.helpDisplay

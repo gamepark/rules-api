@@ -46,18 +46,15 @@ export type RulesHelpDisplay<RuleId extends number = number> = {
 }
 
 /**
- * What becomes of the help dialog already displayed when a {@link DisplayHelp} move is played
+ * What becomes of the help dialog already displayed when a {@link DisplayHelp} move is played.
+ * By default, it is replaced and the history is left unchanged.
  */
 export enum HelpHistory {
   /**
-   * The help displayed is kept in {@link MaterialGame.helpHistory}, so that the player can go back to it.
-   * This is the default when a help is displayed over another one, for instance from a button inside a help.
+   * The help displayed is kept in {@link MaterialGame.helpHistory}, so that the player can go back to it:
+   * for instance when a button inside a help opens the help of a card.
    */
   Keep = 1,
-  /**
-   * The help displayed is replaced, the history is left unchanged: for instance to browse similar items.
-   */
-  Replace,
   /**
    * The last help kept in history is displayed again and removed from history. The helpDisplay of the move is ignored.
    */

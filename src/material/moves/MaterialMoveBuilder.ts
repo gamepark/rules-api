@@ -62,7 +62,7 @@ export namespace MaterialMoveBuilder {
   /**
    * Creates a {@link DisplayHelp} object
    * @param helpDisplay The help to display, undefined to close the help dialog
-   * @param history What becomes of the help already displayed: by default, it is kept in history (see {@link HelpHistory})
+   * @param history What becomes of the help already displayed: by default, it is replaced (see {@link HelpHistory})
    */
   export const displayHelp = <P extends number = number, M extends number = number, L extends number = number>
   (helpDisplay?: HelpDisplay<P, M, L>, history?: HelpHistory): DisplayHelp<P, M, L> =>
