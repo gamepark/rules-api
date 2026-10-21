@@ -5,7 +5,7 @@ import {
   CustomMove, DisplayHelp, DropItem,
   EndGame,
   EndPlayerTurn,
-  HelpDisplay, HelpDisplayType,
+  HelpDisplay, HelpDisplayType, HelpHistory,
   LocalMoveType,
   MoveKind,
   RuleMoveType,
@@ -61,10 +61,19 @@ export namespace MaterialMoveBuilder {
 
   /**
    * Creates a {@link DisplayHelp} object
+   * @param helpDisplay The help to display, undefined to close the help dialog
+   * @param history What becomes of the help already displayed: by default, it is replaced (see {@link HelpHistory})
    */
   export const displayHelp = <P extends number = number, M extends number = number, L extends number = number>
-  (helpDisplay?: HelpDisplay<P, M, L>): DisplayHelp<P, M, L> =>
-    ({ kind: MoveKind.LocalMove, type: LocalMoveType.DisplayHelp, helpDisplay })
+  (helpDisplay?: HelpDisplay<P, M, L>, history?: HelpHistory): DisplayHelp<P, M, L> =>
+    ({ kind: MoveKind.LocalMove, type: LocalMoveType.DisplayHelp, helpDisplay, ...(history && { history }) })
+
+  /**
+   * Creates a {@link DisplayHelp} object that displays again the last help kept in history
+   */
+  export const displayPreviousHelp = <P extends number = number, M extends number = number, L extends number = number>
+  (): DisplayHelp<P, M, L> =>
+    ({ kind: MoveKind.LocalMove, type: LocalMoveType.DisplayHelp, history: HelpHistory.Back })
 
   /**
    * Creates a {@link DisplayHelp} object holding a {@link MaterialHelpDisplay}

@@ -13,6 +13,7 @@ import { TutorialState } from './tutorial'
  * @property memory A key-value record of free values when some state do not fit in items or rule properties. See {@link GameMemory} and {@link PlayerMemory}.
  * @property options The options the game was set up with (see {@link MaterialGameSetup.setup}). Absent in games created before it was recorded.
  * @property helpDisplay Current help dialog opened on the client side
+ * @property helpHistory Help dialogs displayed before the current one, the last one is the help to go back to (see HelpHistory)
  * @property view Current view displayed on the client side
  * @property droppedItems Items that were just dropped on the client side
  * @property tutorial The {@link TutorialState}, only set for tutorial games
@@ -29,6 +30,7 @@ export type MaterialGame<Player extends number = number,
   memory: Record<keyof any, any>
   options?: any
   helpDisplay?: HelpDisplay<Player, MaterialType, LocationType>
+  helpHistory?: HelpDisplay<Player, MaterialType, LocationType>[]
   view?: View
   droppedItems?: DisplayedItem<MaterialType>[]
   tutorial?: TutorialState<Player, MaterialType, LocationType, RuleId>

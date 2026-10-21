@@ -12,6 +12,9 @@ import { MaterialGame } from './MaterialGame'
 import { GameMemory, PlayerMemory } from './memory'
 import {
   CustomMove,
+  DisplayHelp,
+  HelpDisplay,
+  HelpHistory,
   isEndGame,
   isEndPlayerTurn,
   isRoll,
@@ -267,7 +270,7 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
       case MoveKind.LocalMove:
         switch (move.type) {
           case LocalMoveType.DisplayHelp:
-            this.game.helpDisplay = move.helpDisplay
+            this.applyHelpDisplay(move)
             break
           case LocalMoveType.DropItem:
             if (!this.game.droppedItems) {
@@ -480,11 +483,36 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
       || (isStartSimultaneousRule(move) && (move.players ?? this.game.players).some((p) => p !== player))
   }
 
+  private applyHelpDisplay(move: DisplayHelp<Player, MaterialType, LocationType>) {
+    const history = this.game.helpHistory ?? []
+    if (move.history === HelpHistory.Back) {
+      this.game.helpDisplay = history[history.length - 1]
+      this.updateHelpHistory(history.slice(0, -1))
+    } else if (!move.helpDisplay) {
+      delete this.game.helpDisplay
+      delete this.game.helpHistory
+    } else {
+      if (this.game.helpDisplay && move.history === HelpHistory.Keep) {
+        this.updateHelpHistory([...history, this.game.helpDisplay])
+      }
+      this.game.helpDisplay = move.helpDisplay
+    }
+  }
+
+  private updateHelpHistory(history: HelpDisplay<Player, MaterialType, LocationType>[]) {
+    if (history.length) {
+      this.game.helpHistory = history
+    } else {
+      delete this.game.helpHistory
+    }
+  }
+
   /**
    * Restore help display & local item moves
    */
   restoreTransientState(previousState: MaterialGame<Player, MaterialType, LocationType, RuleId, View>) {
     this.game.helpDisplay = previousState.helpDisplay
+    this.game.helpHistory = previousState.helpHistory
     this.game.transientItems = previousState.transientItems
     this.game.view = previousState.view
     for (const type in previousState.transientItems) {
