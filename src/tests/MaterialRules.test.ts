@@ -238,9 +238,16 @@ describe('MaterialRules', () => {
       hooks.afterItemMove = () => [customMove(2)]
       const game = makeGame({ id: R.Turn }, { [M.Card]: [{ location: { type: L.Board }, id: 1 }] })
       const rules = new TestRules(game)
-      const consequences = rules.play(selectCard(0), { transient: true })
+      const consequences = rules.play(deleteCard(0), { transient: true })
       expect(consequences).toEqual([]) // hooks skipped
       expect(game.transientItems![M.Card]).toEqual([0])
+    })
+
+    it('should record a transient selection apart from the other transient moves', () => {
+      const game = makeGame({ id: R.Turn }, { [M.Card]: [{ location: { type: L.Board }, id: 1 }] })
+      new TestRules(game).play(selectCard(0), { transient: true })
+      expect(game.transientSelections![M.Card]).toEqual([0])
+      expect(game.transientItems).toBeUndefined()
     })
 
     it('should clear transient items when the same move is later played for real', () => {
@@ -252,37 +259,55 @@ describe('MaterialRules', () => {
     })
 
     describe('restoreTransientState', () => {
+      const hand = (x: number) => ({ type: L.Hand, player: 1, x })
+      const moveCard = (itemIndex: number, location: any) => ({ kind: MoveKind.ItemMove as const, type: ItemMoveType.Move as const, itemType: M.Card, itemIndex, location })
+      const unselectCard = (itemIndex: number) => ({ ...selectCard(itemIndex), selected: false })
+
+      /** The client side undo: the moves still played are replayed from the start, then the transient state is restored. */
+      const undo = (previous: Game, items: Game['items']) => {
+        const game = makeGame({ id: R.Turn }, items)
+        new TestRules(game).restoreTransientState(previous)
+        return game
+      }
+
       it('should keep the selection of an item', () => {
-        const previous = makeGame({ id: R.Turn }, { [M.Card]: [{ location: { type: L.Hand, player: 1, x: 0 }, id: 1, selected: true }] })
-        previous.transientItems = { [M.Card]: [0] }
-        const game = makeGame({ id: R.Turn }, { [M.Card]: [{ location: { type: L.Hand, player: 1, x: 0 }, id: 1 }] })
-        new TestRules(game).restoreTransientState(previous)
-        expect(game.items[M.Card]![0]).toEqual({ location: { type: L.Hand, player: 1, x: 0 }, id: 1, selected: true })
+        const previous = makeGame({ id: R.Turn }, { [M.Card]: [{ location: hand(0), id: 1 }] })
+        new TestRules(previous).play(selectCard(0), { transient: true })
+        const game = undo(previous, { [M.Card]: [{ location: hand(0), id: 1 }] })
+        expect(game.items[M.Card]![0]).toEqual({ location: hand(0), id: 1, selected: true })
       })
 
-      it('should keep where the replay puts a selected item inside its location area', () => {
-        // The card was selected at x = 1, another card of the hand was played and it slid to x = 0, then the move was undone
-        const previous = makeGame({ id: R.Turn }, { [M.Card]: [{ location: { type: L.Hand, player: 1, x: 0 }, id: 1 }] })
-        previous.transientItems = { [M.Card]: [0] }
-        const game = makeGame({ id: R.Turn }, { [M.Card]: [{ location: { type: L.Hand, player: 1, x: 1 }, id: 1 }] })
-        new TestRules(game).restoreTransientState(previous)
-        expect(game.items[M.Card]![0]).toEqual({ location: { type: L.Hand, player: 1, x: 1 }, id: 1 })
+      it('should keep where the replay puts a selected item', () => {
+        // The card is selected at x = 1, another card of the hand is played and it slides to x = 0, then the move is undone
+        const previous = makeGame({ id: R.Turn }, { [M.Card]: [{ location: hand(0), id: 1 }] })
+        new TestRules(previous).play(selectCard(0), { transient: true })
+        const game = undo(previous, { [M.Card]: [{ location: hand(1), id: 1 }] })
+        expect(game.items[M.Card]![0]).toEqual({ location: hand(1), id: 1, selected: true })
       })
 
-      it('should restore an item that a transient move took to another location area', () => {
-        const previous = makeGame({ id: R.Turn }, { [M.Card]: [{ location: { type: L.Board }, id: 1 }] })
-        previous.transientItems = { [M.Card]: [0] }
-        const game = makeGame({ id: R.Turn }, { [M.Card]: [{ location: { type: L.Hand, player: 1, x: 0 }, id: 1 }] })
-        new TestRules(game).restoreTransientState(previous)
+      it('should put back in the hand a card selected, played, then unselected', () => {
+        // The card is selected in the hand, played on the board, unselected by the client, then the move is undone
+        const previous = makeGame({ id: R.Turn }, { [M.Card]: [{ location: hand(0), id: 1 }] })
+        const rules = new TestRules(previous)
+        rules.play(selectCard(0), { transient: true })
+        rules.play(moveCard(0, { type: L.Board }))
+        rules.play(unselectCard(0), { transient: true })
+        const game = undo(previous, { [M.Card]: [{ location: hand(0), id: 1 }] })
+        expect(game.items[M.Card]![0]).toEqual({ location: hand(0), id: 1 })
+      })
+
+      it('should restore an item that a transient move took elsewhere', () => {
+        const previous = makeGame({ id: R.Turn }, { [M.Card]: [{ location: hand(0), id: 1 }] })
+        new TestRules(previous).play(moveCard(0, { type: L.Board }), { transient: true })
+        const game = undo(previous, { [M.Card]: [{ location: hand(0), id: 1 }] })
         expect(game.items[M.Card]![0]).toEqual({ location: { type: L.Board }, id: 1 })
       })
 
-      it('should restore an item that a transient move created', () => {
-        const previous = makeGame({ id: R.Turn }, { [M.Card]: [{ location: { type: L.Board }, id: 1 }] })
-        previous.transientItems = { [M.Card]: [0] }
-        const game = makeGame({ id: R.Turn })
-        new TestRules(game).restoreTransientState(previous)
-        expect(game.items[M.Card]).toEqual([{ location: { type: L.Board }, id: 1 }])
+      it('should not fail when a selected item is missing after the replay', () => {
+        const previous = makeGame({ id: R.Turn }, { [M.Card]: [{ location: hand(0), id: 1 }] })
+        new TestRules(previous).play(selectCard(0), { transient: true })
+        const game = undo(previous, {})
+        expect(game.items[M.Card]).toBeUndefined()
       })
     })
 

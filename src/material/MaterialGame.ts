@@ -18,6 +18,8 @@ import { TutorialState } from './tutorial'
  * @property droppedItems Items that were just dropped on the client side
  * @property tutorial The {@link TutorialState}, only set for tutorial games
  * @property transientItems Items modified locally with transient moves that need to be kept as they are in case of an undo
+ * @property transientSelections Items selected or unselected locally with transient moves: in case of an undo, they keep where the
+ * replay puts them, and only their selection is kept
  */
 export type MaterialGame<Player extends number = number,
   MaterialType extends number = number,
@@ -35,4 +37,5 @@ export type MaterialGame<Player extends number = number,
   droppedItems?: DisplayedItem<MaterialType>[]
   tutorial?: TutorialState<Player, MaterialType, LocationType, RuleId>
   transientItems?: Partial<Record<MaterialType, number[]>>
+  transientSelections?: Partial<Record<MaterialType, number[]>>
 }
