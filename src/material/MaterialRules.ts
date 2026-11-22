@@ -6,8 +6,8 @@ import { hasTimeLimit, TimeLimit } from '../TimeLimit'
 import { Undo } from '../Undo'
 import { SequentialMoves } from '../SequentialMove'
 import { UnpredictableMoves } from '../UnpredictableMove'
-import { Material, MaterialMutator, SimultaneousContext } from './items'
-import { LocationStrategy } from './location'
+import { Material, MaterialItem, MaterialMutator, SimultaneousContext } from './items'
+import { isSameLocationArea, LocationStrategy } from './location'
 import { MaterialGame } from './MaterialGame'
 import { GameMemory, PlayerMemory } from './memory'
 import {
@@ -516,8 +516,24 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
     this.game.transientItems = previousState.transientItems
     this.game.view = previousState.view
     for (const type in previousState.transientItems) {
-      previousState.transientItems[type]!.forEach(index => this.game.items[type]![index] = previousState.items[type]![index])
+      previousState.transientItems[type]!.forEach(index => {
+        const items = this.game.items[type] ?? (this.game.items[type] = [])
+        items[index] = this.restoreTransientItem(previousState.items[type]![index], items[index])
+      })
     }
+  }
+
+  /**
+   * The state of an item touched by transient moves, after an undo.
+   * An item that no transient move took to another location area (a selected item) keeps where the replay puts it: a location
+   * strategy may have moved it inside its area since then (a card selected in a hand, another card of the hand played, then
+   * this move undone). Only its selection is restored.
+   */
+  private restoreTransientItem(previous: MaterialItem<Player, LocationType> | undefined,
+                               replayed: MaterialItem<Player, LocationType> | undefined): MaterialItem<Player, LocationType> {
+    if (!previous || !replayed || !isSameLocationArea(previous.location, replayed.location)) return previous!
+    const { selected: _selected, ...item } = replayed
+    return previous.selected === undefined ? item : { ...item, selected: previous.selected }
   }
 
   /**

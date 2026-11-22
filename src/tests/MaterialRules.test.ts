@@ -251,6 +251,41 @@ describe('MaterialRules', () => {
       expect(game.transientItems![M.Card]).toEqual([])
     })
 
+    describe('restoreTransientState', () => {
+      it('should keep the selection of an item', () => {
+        const previous = makeGame({ id: R.Turn }, { [M.Card]: [{ location: { type: L.Hand, player: 1, x: 0 }, id: 1, selected: true }] })
+        previous.transientItems = { [M.Card]: [0] }
+        const game = makeGame({ id: R.Turn }, { [M.Card]: [{ location: { type: L.Hand, player: 1, x: 0 }, id: 1 }] })
+        new TestRules(game).restoreTransientState(previous)
+        expect(game.items[M.Card]![0]).toEqual({ location: { type: L.Hand, player: 1, x: 0 }, id: 1, selected: true })
+      })
+
+      it('should keep where the replay puts a selected item inside its location area', () => {
+        // The card was selected at x = 1, another card of the hand was played and it slid to x = 0, then the move was undone
+        const previous = makeGame({ id: R.Turn }, { [M.Card]: [{ location: { type: L.Hand, player: 1, x: 0 }, id: 1 }] })
+        previous.transientItems = { [M.Card]: [0] }
+        const game = makeGame({ id: R.Turn }, { [M.Card]: [{ location: { type: L.Hand, player: 1, x: 1 }, id: 1 }] })
+        new TestRules(game).restoreTransientState(previous)
+        expect(game.items[M.Card]![0]).toEqual({ location: { type: L.Hand, player: 1, x: 1 }, id: 1 })
+      })
+
+      it('should restore an item that a transient move took to another location area', () => {
+        const previous = makeGame({ id: R.Turn }, { [M.Card]: [{ location: { type: L.Board }, id: 1 }] })
+        previous.transientItems = { [M.Card]: [0] }
+        const game = makeGame({ id: R.Turn }, { [M.Card]: [{ location: { type: L.Hand, player: 1, x: 0 }, id: 1 }] })
+        new TestRules(game).restoreTransientState(previous)
+        expect(game.items[M.Card]![0]).toEqual({ location: { type: L.Board }, id: 1 })
+      })
+
+      it('should restore an item that a transient move created', () => {
+        const previous = makeGame({ id: R.Turn }, { [M.Card]: [{ location: { type: L.Board }, id: 1 }] })
+        previous.transientItems = { [M.Card]: [0] }
+        const game = makeGame({ id: R.Turn })
+        new TestRules(game).restoreTransientState(previous)
+        expect(game.items[M.Card]).toEqual([{ location: { type: L.Board }, id: 1 }])
+      })
+    })
+
     it('should remove dropped items affected by the move', () => {
       const game = makeGame({ id: R.Turn }, { [M.Card]: [{ location: { type: L.Board }, id: 1 }] })
       game.droppedItems = [{ type: M.Card, index: 0, displayIndex: 0 }]
