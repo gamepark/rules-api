@@ -323,10 +323,14 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
     }
     const indexes = getItemMoveIndexes(move)
     if (context?.transient) {
-      if (!this.game.transientItems) this.game.transientItems = {}
-      this.game.transientItems[move.itemType] = union(this.game.transientItems[move.itemType] ?? [], indexes)
-    } else if (this.game.transientItems) {
-      this.game.transientItems[move.itemType] = difference(this.game.transientItems[move.itemType] ?? [], indexes)
+      // A selection only changes whether the item is selected: an undo keeps the item where the replay puts it
+      const field = move.type === ItemMoveType.Select ? 'transientSelections' : 'transientItems'
+      if (!this.game[field]) this.game[field] = {}
+      this.game[field][move.itemType] = union(this.game[field][move.itemType] ?? [], indexes)
+    } else {
+      for (const field of ['transientItems', 'transientSelections'] as const) {
+        if (this.game[field]) this.game[field][move.itemType] = difference(this.game[field][move.itemType] ?? [], indexes)
+      }
     }
     if (!context?.transient) {
       consequences.push(...this.afterItemMove(move, context))
@@ -514,9 +518,22 @@ export abstract class MaterialRules<Player extends number = number, MaterialType
     this.game.helpDisplay = previousState.helpDisplay
     this.game.helpHistory = previousState.helpHistory
     this.game.transientItems = previousState.transientItems
+    this.game.transientSelections = previousState.transientSelections
     this.game.view = previousState.view
     for (const type in previousState.transientItems) {
-      previousState.transientItems[type]!.forEach(index => this.game.items[type]![index] = previousState.items[type]![index])
+      const items = this.game.items[type] ?? (this.game.items[type] = [])
+      previousState.transientItems[type]!.forEach(index => items[index] = previousState.items[type]![index])
+    }
+    // A selected item keeps where the replay puts it, which the move undone may have changed: only its selection is restored
+    for (const type in previousState.transientSelections) {
+      const items = this.game.items[type]
+      previousState.transientSelections[type]!.forEach(index => {
+        const item = items?.[index]
+        if (!item) return
+        const selected = previousState.items[type]?.[index]?.selected
+        if (selected === undefined || selected === false) delete item.selected
+        else item.selected = selected
+      })
     }
   }
 
