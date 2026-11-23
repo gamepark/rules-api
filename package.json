@@ -28,11 +28,12 @@
     "access": "public"
   },
   "devDependencies": {
-    "@types/node": "^26.1.2",
-    "@vitest/coverage-v8": "^4.1.10",
-    "es-toolkit": "^1.50.0",
+    "@types/node": "^26.6.6",
+    "@vitest/coverage-v8": "^5.1.1",
+    "es-toolkit": "^1.53.2",
     "typescript": "^7.0.2",
-    "vitest": "4.1.10"
+    "vite": "^8.3.8",
+    "vitest": "5.1.1"
   },
   "peerDependencies": {
     "es-toolkit": "^1.46.0"
